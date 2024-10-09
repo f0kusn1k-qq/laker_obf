@@ -366,3 +366,6 @@ FodyWeavers.xsd
 /Hercules/Hercules/activity.json
 /.env
 /Hercules/Hercules
+/Hercules/Hercules-Bot
+/Hercules/Obfuscator
+/Hercules/luacheck.exe
