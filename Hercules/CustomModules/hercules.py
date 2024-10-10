@@ -36,6 +36,19 @@ class Hercules:
         return None
 
 
+    @lru_cache(maxsize=None)
+    def _get_active_keys(self, bitkey):
+        max_bitkey = (1 << len(self.methods)) - 1
+        if bitkey < 0 or bitkey > max_bitkey:
+            raise ValueError(f"Invalid bitkey: {bitkey}. It must be between 0 and {max_bitkey}.")
+
+        active_keys = []
+        for method in self.methods:
+            if bitkey & (1 << method['bitkey']):
+                active_keys.append(method['key'])
+        return active_keys
+
+
     def _detectLUA(self):
         LUA = shutil.which('lua54')
         if LUA is None:
@@ -97,5 +110,13 @@ for i = 1, ndo
 end'''
 
     
-
+    
     print(obfuscator.isValidLUASyntax(lua_test))
+    import time
+    # For 0 to 31
+    for o in range(4):
+        start_time = time.time()
+        for i in range(32):
+            obfuscator._get_active_keys(i)
+        print(f"Time taken: {time.time() - start_time}")
+        

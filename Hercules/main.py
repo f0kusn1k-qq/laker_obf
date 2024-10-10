@@ -608,7 +608,7 @@ async def self(interaction: discord.Interaction):
 class ModeSelectionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=60)
-        self.selected_bits = (1 << len(obfuscator.methods)) - 1  # Setzt alle Bits auf 1
+        self.selected_bits = (1 << len(obfuscator.methods)) - 1
         self.create_buttons()
 
     def toggle_bit(self, bit_position):
@@ -617,7 +617,7 @@ class ModeSelectionView(discord.ui.View):
     def create_buttons(self):
         for method in obfuscator.methods:
             method_name = method['name']
-            bit_position = method['bitkey']  # Bitkey als Bit-Position verwenden
+            bit_position = method['bitkey']
             is_selected = self.selected_bits & (1 << bit_position) != 0
             button = self.MethodButton(label=method_name, bit_position=bit_position, selected=is_selected)
             self.add_item(button)
