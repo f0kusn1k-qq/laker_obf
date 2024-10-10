@@ -608,7 +608,7 @@ async def self(interaction: discord.Interaction):
 class ModeSelectionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=60)
-        self.selected_bits = 0
+        self.selected_bits = (1 << len(obfuscator.methods)) - 1  # Setzt alle Bits auf 1
         self.create_buttons()
 
     def toggle_bit(self, bit_position):
@@ -616,11 +616,13 @@ class ModeSelectionView(discord.ui.View):
 
     def create_buttons(self):
         for method, bit_position in obfuscator.methods.items():
-            self.add_item(self.MethodButton(label=method, bit_position=bit_position))
+            is_selected = self.selected_bits & (1 << bit_position) != 0
+            button = self.MethodButton(label=method, bit_position=bit_position, selected=is_selected)
+            self.add_item(button)
 
     class MethodButton(discord.ui.Button):
-        def __init__(self, label, bit_position):
-            super().__init__(label=label, style=discord.ButtonStyle.primary)
+        def __init__(self, label, bit_position, selected=False):
+            super().__init__(label=label + (' (Selected)' if selected else ''), style=discord.ButtonStyle.success if selected else discord.ButtonStyle.primary)
             self.bit_position = bit_position
 
         async def callback(self, interaction: discord.Interaction):
@@ -652,7 +654,7 @@ class ModeSelectionView(discord.ui.View):
 @discord.app_commands.describe(url = 'The URL of the Lua file.')
 async def self(interaction: discord.Interaction, url: str):
     await interaction.response.defer(ephemeral=True)
-    valid = await Functions.is_valid_url_and_lua_syntax(url)
+    valid, lua_code = await Functions.is_valid_url_and_lua_syntax(url)
     if not valid:
         await interaction.edit_original_response(content="The URL is not reachable or does not contain valid Lua syntax.")
         return
@@ -663,7 +665,48 @@ async def self(interaction: discord.Interaction, url: str):
         await view.wait()
 
         selected_bits = view.selected_bits
+
+        file_path = f'{BUFFER_FOLDER}{interaction.user.id}_url.lua'
+        with open(file_path, 'w', encoding='utf8') as f:
+            f.write(lua_code)
+
         await interaction.edit_original_response(content=f"Selected bits: {selected_bits:#04b}")
+
+    os.remove(file_path)
+
+
+
+#Fetch file from upload
+@tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.describe(file = 'File to be obfuscated.')
+async def self(interaction: discord.Interaction, file: discord.Attachment):
+    await interaction.response.defer(ephemeral=True)
+    if not file.filename.endswith('.lua'):
+        await interaction.edit_original_response(content="Please upload a `.lua` file.")
+        return
+    if file.size > 1024 * 1024 * 5:
+        await interaction.edit_original_response(content="The file is too big. Please upload a file smaller than 5 MB.")
+        return
+
+    file_path = f'{BUFFER_FOLDER}{interaction.user.id}_file.lua'
+    with open(file_path, 'wb') as f:
+        f.write(await file.read())
+
+    with open(file_path, 'r', encoding='utf8') as f:
+        lua_code = f.read()
+
+    if not obfuscator.isValidLUASyntax(lua_code):
+        await interaction.edit_original_response(content="The uploaded file does not contain valid Lua syntax.")
+    else:
+        view = ModeSelectionView()
+        await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {file.filename}.", view=view)
+        await view.wait()
+
+        selected_bits = view.selected_bits
+        await interaction.edit_original_response(content=f"Selected bits: {selected_bits:#04b}")
+
+    os.remove(file_path)
 
 
 
