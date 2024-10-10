@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from functools import lru_cache
 
 
 class Hercules:
@@ -18,12 +19,21 @@ class Hercules:
             self._program_logger.error("Could not find Obfuscator")
             self._program_logger.info("Shutting down due to missing Obfuscator")
             sys.exit(1)
-        self.methods = {'Control Flow': 0,
-                        'Variable Renaming': 1,
-                        'Garbage Code': 2,
-                        'Opaque Predicates': 3,
-                        'Bytecode Encoding': 4,
-                        }
+        self.methods = [
+            {'key': 'control_flow', 'name': 'Control Flow', 'bitkey': 0},
+            {'key': 'variable_renaming', 'name': 'Variable Renaming', 'bitkey': 1},
+            {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2},
+            {'key': 'opaque_predicates', 'name': 'Opaque Predicates', 'bitkey': 3},
+            {'key': 'bytecode_encoding', 'name': 'Bytecode Encoding', 'bitkey': 4},
+        ]
+
+
+    @lru_cache(maxsize=None)
+    def find_method(self, method_name):
+        for method in self.methods:
+            if method['name'] == method_name:
+                return method
+        return None
 
 
     def _detectLUA(self):

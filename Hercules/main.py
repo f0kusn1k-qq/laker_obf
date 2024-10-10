@@ -615,9 +615,11 @@ class ModeSelectionView(discord.ui.View):
         self.selected_bits ^= (1 << bit_position)
 
     def create_buttons(self):
-        for method, bit_position in obfuscator.methods.items():
+        for method in obfuscator.methods:
+            method_name = method['name']
+            bit_position = method['bitkey']  # Bitkey als Bit-Position verwenden
             is_selected = self.selected_bits & (1 << bit_position) != 0
-            button = self.MethodButton(label=method, bit_position=bit_position, selected=is_selected)
+            button = self.MethodButton(label=method_name, bit_position=bit_position, selected=is_selected)
             self.add_item(button)
 
     class MethodButton(discord.ui.Button):
