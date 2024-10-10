@@ -14,7 +14,10 @@ ARG BUILD_DATE
 ARG COMMIT
 
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libc-dev linux-headers rust cargo g++ && \
-    apk add curl && \
+    apk add git lua5.4-dev luarocks5.4 && \
+    ln -s /usr/bin/luarocks-5.4 /usr/bin/luarocks && \
+    luarocks install luacheck && \
+    git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator && \
     python -m pip install --upgrade pip && \
     pip install --upgrade setuptools wheel && \
     pip install -r requirements.txt && \

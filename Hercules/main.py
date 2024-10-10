@@ -1,6 +1,7 @@
-#Import
+﻿#Import
 import time
 startupTime_start = time.time()
+import aiohttp
 import asyncio
 import datetime
 import discord
@@ -9,13 +10,14 @@ import jsonschema
 import os
 import platform
 import psutil
+import re
 import sentry_sdk
 import signal
 import sys
-from CustomModules.app_translation import Translator as CustomTranslator
+from CustomModules import hercules
 from CustomModules import log_handler
 from dotenv import load_dotenv
-from typing import Optional, Any
+from typing import Optional, Any, Union, Tuple
 from urllib.parse import urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -24,8 +26,8 @@ from zipfile import ZIP_DEFLATED, ZipFile
 #Init
 discord.VoiceClient.warn_nacl = False
 load_dotenv()
-APP_FOLDER_NAME = 'BOTFOLDER'
-BOT_NAME = 'BOTNAME'
+APP_FOLDER_NAME = 'Hercules-Bot'
+BOT_NAME = 'Hercules'
 os.makedirs(f'{APP_FOLDER_NAME}//Logs', exist_ok=True)
 os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
@@ -50,6 +52,8 @@ log_manager = log_handler.LogManager(LOG_FOLDER, BOT_NAME, LOG_LEVEL)
 discord_logger = log_manager.get_logger('discord')
 program_logger = log_manager.get_logger('Program')
 program_logger.info('Engine powering up...')
+
+obfuscator = hercules.Hercules(program_logger)
 
 #Create activity.json if not exists
 class JSONValidator:
@@ -102,7 +106,7 @@ class aclient(discord.AutoShardedClient):
     def __init__(self):
 
         intents = discord.Intents.default()
-        #intents.guild_messages = True
+        intents.guild_messages = True
         #intents.members = True
 
         super().__init__(owner_id = OWNERID,
@@ -238,7 +242,6 @@ class aclient(discord.AutoShardedClient):
             sys.exit(f"Error fetching owner user: {e}")
         discord_logger.info(f'Logged in as {bot.user} (ID: {bot.user.id})')
         discord_logger.info('Syncing...')
-        await tree.set_translator(CustomTranslator())
         await tree.sync()
         discord_logger.info('Synced.')
         self.synced = True
@@ -255,12 +258,6 @@ class aclient(discord.AutoShardedClient):
 bot = aclient()
 tree = discord.app_commands.CommandTree(bot)
 tree.on_error = bot.on_app_command_error
-
-
-#Load Modules
-from CustomModules import context_commands
-context_commands.setup(tree)
-
 
 
 class SignalHandler:
@@ -328,6 +325,32 @@ class Functions():
             except discord.NotFound:
                 pass
         return item_object
+
+    async def is_valid_url_and_lua_syntax(url: str) -> Tuple[bool, Union[str, None]]:
+        url_pattern = re.compile(
+            r'^(http|https):\/\/'  # http:// oder https://
+            r'(\w+:{0,1}\w*@)?'  # Userdata (optional)
+            r'([a-zA-Z0-9.-]+)'  # Domain-Name
+            r'(:[0-9]+)?'  # Port (optional)
+            r'(\/.*)?$'  # Path (optional)
+        )
+
+        if not url_pattern.match(url):
+            return False
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status not in [200, 204, 301, 302]:
+                        return False, None
+                    lua_code = await response.text()
+                    if obfuscator.isValidLUASyntax(lua_code):
+                        return True, lua_code
+                    else:
+                        return False, None
+        except aiohttp.ClientError as e:
+            program_logger.error(f"Error fetching URL: {e}")
+            return False, None
 
 
 
@@ -555,16 +578,92 @@ async def self(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 
-#Change Nickname
-@tree.command(name = 'change_nickname', description = 'Change the nickname of the bot.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.guild_id))
-@discord.app_commands.checks.has_permissions(manage_nicknames = True)
-@discord.app_commands.describe(nick='New nickname for me.')
-async def self(interaction: discord.Interaction, nick: str):
-    await interaction.guild.me.edit(nick=nick)
-    await interaction.response.send_message(f'My new nickname is now **{nick}**.', ephemeral=True)
+#Help
+@tree.command(name = 'help', description = 'Explains how to use this obfuscator.')
+@discord.app_commands.checks.cooldown(1, 30, key=lambda i: (i.user.id))
+async def self(interaction: discord.Interaction):
+    embed = discord.Embed(
+    title="Hercules Bot - Help",
+    description="Your trusty bot for obfuscating Lua files 💪",
+    color=discord.Color.blue()
+    )    
+    embed.add_field(
+        name="/obfuscate_url [url]",
+        value="Submit a URL (e.g. from pastebin) containing a Lua file. Hercules will process and obfuscate it.",
+        inline=False
+    )   
+    embed.add_field(
+        name="/obfuscate_file [file]",
+        value="Upload a `.lua` file along with this command. Hercules will add it to the queue and notify you once it's done.",
+        inline=False
+    ) 
+    embed.set_footer(text="Happy obfuscating! 🛡️")
+    await interaction.response.send_message(embed=embed)
 
 
+
+
+##Obfucation Commands
+#View
+class ModeSelectionView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        self.selected_bits = 0
+        self.create_buttons()
+
+    def toggle_bit(self, bit_position):
+        self.selected_bits ^= (1 << bit_position)
+
+    def create_buttons(self):
+        for method, bit_position in obfuscator.methods.items():
+            self.add_item(self.MethodButton(label=method, bit_position=bit_position))
+
+    class MethodButton(discord.ui.Button):
+        def __init__(self, label, bit_position):
+            super().__init__(label=label, style=discord.ButtonStyle.primary)
+            self.bit_position = bit_position
+
+        async def callback(self, interaction: discord.Interaction):
+            view = self.view
+            if view.selected_bits & (1 << self.bit_position):
+                view.toggle_bit(self.bit_position)
+                self.label = self.label.replace(' (Selected)', '')
+                self.style = discord.ButtonStyle.primary
+            else:
+                view.toggle_bit(self.bit_position)
+                self.label += ' (Selected)'
+                self.style = discord.ButtonStyle.success
+
+            await interaction.response.edit_message(view=view)
+
+    @discord.ui.button(label='Submit', style=discord.ButtonStyle.danger)
+    async def submit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.selected_bits == 0:
+            await interaction.response.send_message("You must select at least one obfuscation method!", ephemeral=True)
+        else:
+            # Supress "This interaction failed" message
+            await interaction.response.edit_message(view=None)
+            self.stop()
+
+
+#Fetch file from URL
+@tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.describe(url = 'The URL of the Lua file.')
+async def self(interaction: discord.Interaction, url: str):
+    await interaction.response.defer(ephemeral=True)
+    valid = await Functions.is_valid_url_and_lua_syntax(url)
+    if not valid:
+        await interaction.edit_original_response(content="The URL is not reachable or does not contain valid Lua syntax.")
+        return
+    else:
+        view = ModeSelectionView()
+        await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {url}.", view=view)
+
+        await view.wait()
+
+        selected_bits = view.selected_bits
+        await interaction.edit_original_response(content=f"Selected bits: {selected_bits:#04b}")
 
 
 

@@ -14,6 +14,7 @@
     <RootNamespace>DBDStats</RootNamespace>
     <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
     <InterpreterId>MSBuild|Hercules|$(MSBuildProjectFullPath)</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,8 +25,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CustomModules\app_translation.py" />
-    <Compile Include="CustomModules\context_commands.py" />
+    <Compile Include="CustomModules\hercules.py" />
     <Compile Include="CustomModules\log_handler.py" />
     <Compile Include="Dockerfile" />
     <Compile Include="main.py" />
