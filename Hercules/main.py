@@ -1,4 +1,5 @@
 ﻿#Import
+from random import randrange
 import time
 startupTime_start = time.time()
 import aiohttp
@@ -352,6 +353,23 @@ class Functions():
             program_logger.error(f"Error fetching URL: {e}")
             return False, None
 
+    async def send_file(interaction: discord.Interaction, file_path: str):
+        try:
+            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(file_path))
+        except discord.HTTPException as err:
+            if err.status == 413:
+                zip_file = f'{BUFFER_FOLDER}{interaction.user.id}_{randrange(0, 9999)}.zip'
+                with ZipFile(zip_file, mode='w', compression=ZIP_DEFLATED, compresslevel=9, allowZip64=True) as f:
+                    f.write(file_path)
+                try:
+                    await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(zip_file))
+                except discord.HTTPException as err:
+                    if err.status == 413:
+                        await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete! The file is too big to be sent directly.")
+                os.remove(zip_file)
+
+        os.remove(file_path)
+
 
 
 ##Owner Commands
@@ -668,14 +686,15 @@ async def self(interaction: discord.Interaction, url: str):
         await view.wait()
         selected_bits = view.selected_bits
 
-        file_path = f'{BUFFER_FOLDER}{interaction.user.id}_url.lua'
+        file_path = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_url.lua')
         with open(file_path, 'w', encoding='utf8') as f:
             f.write(lua_code)
 
-        Hercules.obfuscate(file_path, selected_bits)
-        await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(file_path))
-
-    os.remove(file_path)
+        success = Hercules.obfuscate(file_path, selected_bits)
+        if not success:
+            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.")
+        else:
+            await Functions.send_file(interaction, file_path)
 
 
 
@@ -692,7 +711,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         await interaction.edit_original_response(content="The file is too big. Please upload a file smaller than 5 MB.")
         return
 
-    file_path = f'{BUFFER_FOLDER}{interaction.user.id}_file.lua'
+    file_path = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_file.lua')
     with open(file_path, 'wb') as f:
         f.write(await file.read())
 
@@ -708,10 +727,11 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
 
         selected_bits = view.selected_bits
 
-        Hercules.obfuscate(file_path, selected_bits)
-        await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(file_path))
-
-    os.remove(file_path)
+        success = Hercules.obfuscate(file_path, selected_bits)
+        if not success:
+            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.")
+        else:
+            await Functions.send_file(interaction, file_path)
 
 
 

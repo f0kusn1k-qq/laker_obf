@@ -9,12 +9,12 @@ from functools import lru_cache
 class Hercules:
     def __init__ (self, program_logger):
         self._program_logger = program_logger
-        self._lua = self._detectLUA()
+        self._lua = self._getLuaInterpreter()
         if self._lua is None:
             self._program_logger.error("Could not find LUA 5.4")
             self._program_logger.info("Shutting down due to missing LUA 5.4")
             sys.exit(1)
-        self._obfuscator_folder = self._detectObfuscator()
+        self._obfuscator_folder, self.obfuscator_file = self._detectObfuscator()
         if self._obfuscator_folder is None:
             self._program_logger.error("Could not find Obfuscator")
             self._program_logger.info("Shutting down due to missing Obfuscator")
@@ -42,11 +42,29 @@ class Hercules:
         finally:
             os.remove(temp_file_path)
 
-
-    def obfuscate(self, file_path: str, bitkey: int) -> None:
+    def obfuscate(self, file_path: str, bitkey: int):
+        old_wd = os.getcwd()
+        os.chdir(self._obfuscator_folder)
         enabled_features = self._get_active_keys(bitkey)
-        print(enabled_features)
 
+        flags = " ".join([f"--{feature}" for feature in enabled_features])
+        self._program_logger.info(f"Obfuscating file: {file_path} with flags: {flags}")
+        
+        try:
+            result = subprocess.run([self._lua, "hercules.lua", file_path, "--overwrite"],
+                                    check=True,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
+            
+        except subprocess.CalledProcessError as e:
+            self._program_logger.error(f"Error occurred: {e.output.decode()}\nFile: {file_path}")
+            return
+        finally:
+            os.chdir(old_wd)
+        if result.returncode != 0:
+            return False
+        else:
+            return True
 
     @lru_cache(maxsize=None)
     def find_method(self, method_name):
@@ -54,7 +72,6 @@ class Hercules:
             if method['name'] == method_name:
                 return method
         return None
-
 
     @lru_cache(maxsize=None)
     def _get_active_keys(self, bitkey):
@@ -68,8 +85,7 @@ class Hercules:
                 active_keys.append(method['key'])
         return active_keys
 
-
-    def _detectLUA(self):
+    def _getLuaInterpreter(self) -> str:
         LUA = shutil.which('lua54')
         if LUA is None:
             LUA = shutil.which('lua5.4')
@@ -81,13 +97,18 @@ class Hercules:
                     result = subprocess.run([LUA, '-v'], capture_output=True, text=True)
                     if not '5.4' in result.stdout:
                         return None
-        return LUA
-
+                    else:
+                        return "lua"
+            else:
+                return "lua5.4"
+        else:
+            return "lua54"
 
     def _detectObfuscator(self):
-        folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Obfuscator', 'src'))
+        folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Obfuscator', 'src')).replace('\\', '/')
+        file = os.path.join(folder, 'hercules.lua').replace('\\', '/')
         if os.path.exists(os.path.join(folder, 'hercules.lua')):
-            return folder
+            return folder, file
         return None
 
 
@@ -117,12 +138,5 @@ end'''
 
     
     
-    print(obfuscator.isValidLUASyntax(lua_test))
-    import time
-    # For 0 to 31
-    for o in range(4):
-        start_time = time.time()
-        for i in range(32):
-            obfuscator._get_active_keys(i)
-        print(f"Time taken: {time.time() - start_time}")
+    obfuscator.obfuscate("C:/Users/wissm/OneDrive/Dokumente/Visual Studio Repos/DiscordBots-Hercules/Hercules/Hercules-Bot/Buffer/970119359840284743_url.lua", 31)
         
