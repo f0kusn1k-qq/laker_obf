@@ -251,6 +251,12 @@ class aclient(discord.AutoShardedClient):
         await bot.change_presence(activity = self.Presence.get_activity(), status = self.Presence.get_status())
         if self.initialized:
             return
+        program_logger.info(r'''
+  /\  /\___ _ __ ___ _   _| | ___  ___ 
+ / /_/ / _ \ '__/ __| | | | |/ _ \/ __|
+/ __  /  __/ | | (__| |_| | |  __/\__ \
+\/ /_/ \___|_|  \___|\__,_|_|\___||___/
+        ''')
         global start_time
         start_time = datetime.datetime.now(datetime.UTC)
         program_logger.info(f"Initialization completed in {time.time() - startupTime_start} seconds.")
