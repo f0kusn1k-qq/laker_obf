@@ -28,6 +28,7 @@ class Hercules:
         ]
 
 
+    @lru_cache(maxsize=50)
     def isValidLUASyntax(self, lua_code: str) -> bool:
         with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
             temp_file.write(lua_code.encode('utf-8'))

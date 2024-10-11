@@ -697,7 +697,6 @@ async def self(interaction: discord.Interaction, url: str):
             await Functions.send_file(interaction, file_path)
 
 
-
 #Fetch file from upload
 @tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
 @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
