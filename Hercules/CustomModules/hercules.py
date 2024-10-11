@@ -28,6 +28,26 @@ class Hercules:
         ]
 
 
+    def isValidLUASyntax(self, lua_code: str) -> bool:
+        with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
+            temp_file.write(lua_code.encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        try:
+            result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
+            if result.returncode in [0,1]:
+                return True
+            else:
+                return False
+        finally:
+            os.remove(temp_file_path)
+
+
+    def obfuscate(self, file_path: str, bitkey: int) -> None:
+        enabled_features = self._get_active_keys(bitkey)
+        print(enabled_features)
+
+
     @lru_cache(maxsize=None)
     def find_method(self, method_name):
         for method in self.methods:
@@ -71,21 +91,7 @@ class Hercules:
         return None
 
 
-    def isValidLUASyntax(self, lua_code: str) -> bool:
-        with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
-            temp_file.write(lua_code.encode('utf-8'))
-            temp_file_path = temp_file.name
-
-        try:
-            result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
-            if result.returncode in [0,1]:
-                return True
-            else:
-                return False
-        finally:
-            os.remove(temp_file_path)
             
-
 
 
 

@@ -53,7 +53,7 @@ discord_logger = log_manager.get_logger('discord')
 program_logger = log_manager.get_logger('Program')
 program_logger.info('Engine powering up...')
 
-obfuscator = hercules.Hercules(program_logger)
+Hercules = hercules.Hercules(program_logger)
 
 #Create activity.json if not exists
 class JSONValidator:
@@ -344,7 +344,7 @@ class Functions():
                     if response.status not in [200, 204, 301, 302]:
                         return False, None
                     lua_code = await response.text()
-                    if obfuscator.isValidLUASyntax(lua_code):
+                    if Hercules.isValidLUASyntax(lua_code):
                         return True, lua_code
                     else:
                         return False, None
@@ -607,15 +607,16 @@ async def self(interaction: discord.Interaction):
 #View
 class ModeSelectionView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=60)
-        self.selected_bits = (1 << len(obfuscator.methods)) - 1
+        super().__init__(timeout=30)
+        self.selected_bits = (1 << len(Hercules.methods)) - 1
+        self.timedout = False
         self.create_buttons()
 
     def toggle_bit(self, bit_position):
         self.selected_bits ^= (1 << bit_position)
 
     def create_buttons(self):
-        for method in obfuscator.methods:
+        for method in Hercules.methods:
             method_name = method['name']
             bit_position = method['bitkey']
             is_selected = self.selected_bits & (1 << bit_position) != 0
@@ -640,12 +641,11 @@ class ModeSelectionView(discord.ui.View):
 
             await interaction.response.edit_message(view=view)
 
-    @discord.ui.button(label='Submit', style=discord.ButtonStyle.danger)
+    @discord.ui.button(label='Submit', style=discord.ButtonStyle.danger, row=1)
     async def submit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.selected_bits == 0:
             await interaction.response.send_message("You must select at least one obfuscation method!", ephemeral=True)
         else:
-            # Supress "This interaction failed" message
             await interaction.response.edit_message(view=None)
             self.stop()
 
@@ -662,17 +662,18 @@ async def self(interaction: discord.Interaction, url: str):
         return
     else:
         view = ModeSelectionView()
+
         await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {url}.", view=view)
 
         await view.wait()
-
         selected_bits = view.selected_bits
 
         file_path = f'{BUFFER_FOLDER}{interaction.user.id}_url.lua'
         with open(file_path, 'w', encoding='utf8') as f:
             f.write(lua_code)
 
-        await interaction.edit_original_response(content=f"Selected bits: {selected_bits:#04b}")
+        Hercules.obfuscate(file_path, selected_bits)
+        await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(file_path))
 
     os.remove(file_path)
 
@@ -698,7 +699,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
     with open(file_path, 'r', encoding='utf8') as f:
         lua_code = f.read()
 
-    if not obfuscator.isValidLUASyntax(lua_code):
+    if not Hercules.isValidLUASyntax(lua_code):
         await interaction.edit_original_response(content="The uploaded file does not contain valid Lua syntax.")
     else:
         view = ModeSelectionView()
@@ -706,7 +707,9 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         await view.wait()
 
         selected_bits = view.selected_bits
-        await interaction.edit_original_response(content=f"Selected bits: {selected_bits:#04b}")
+
+        Hercules.obfuscate(file_path, selected_bits)
+        await interaction.followup.send(f"{interaction.user.mention}\nObfuscation complete!", file=discord.File(file_path))
 
     os.remove(file_path)
 
