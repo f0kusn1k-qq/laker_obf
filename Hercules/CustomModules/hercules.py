@@ -25,6 +25,8 @@ class Hercules:
             {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2},
             {'key': 'opaque_predicates', 'name': 'Opaque Predicates', 'bitkey': 3},
             {'key': 'bytecode_encoding', 'name': 'Bytecode Encoding', 'bitkey': 4},
+            {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5},
+            {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6},
         ]
 
 

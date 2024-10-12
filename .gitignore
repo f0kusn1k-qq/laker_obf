@@ -370,3 +370,4 @@ FodyWeavers.xsd
 /Hercules/Obfuscator
 /Hercules/luacheck.exe
 /release.bat
+/debug_build_docker_run.bat

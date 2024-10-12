@@ -252,6 +252,7 @@ class aclient(discord.AutoShardedClient):
         if self.initialized:
             return
         program_logger.info(r'''
+                           _
   /\  /\___ _ __ ___ _   _| | ___  ___ 
  / /_/ / _ \ '__/ __| | | | |/ _ \/ __|
 / __  /  __/ | | (__| |_| | |  __/\__ \
@@ -634,17 +635,20 @@ class ModeSelectionView(discord.ui.View):
         super().__init__(timeout=30)
         self.selected_bits = (1 << len(Hercules.methods)) - 1
         self.timedout = False
+        self.buttons_per_row = 5
         self.create_buttons()
 
     def toggle_bit(self, bit_position):
         self.selected_bits ^= (1 << bit_position)
 
     def create_buttons(self):
-        for method in Hercules.methods:
+        for idx, method in enumerate(Hercules.methods):
             method_name = method['name']
             bit_position = method['bitkey']
             is_selected = self.selected_bits & (1 << bit_position) != 0
+            row = (idx // self.buttons_per_row) + 1
             button = self.MethodButton(label=method_name, bit_position=bit_position, selected=is_selected)
+            button.row = row
             self.add_item(button)
 
     class MethodButton(discord.ui.Button):
@@ -665,7 +669,7 @@ class ModeSelectionView(discord.ui.View):
 
             await interaction.response.edit_message(view=view)
 
-    @discord.ui.button(label='Submit', style=discord.ButtonStyle.danger, row=1)
+    @discord.ui.button(label='Submit', style=discord.ButtonStyle.danger, row=0)
     async def submit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.selected_bits == 0:
             await interaction.response.send_message("You must select at least one obfuscation method!", ephemeral=True)
