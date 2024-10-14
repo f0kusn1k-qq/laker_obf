@@ -31,10 +31,13 @@ class Hercules:
 
 
     @lru_cache(maxsize=50)
-    def isValidLUASyntax(self, lua_code: str) -> bool:
-        with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
-            temp_file.write(lua_code.encode('utf-8'))
-            temp_file_path = temp_file.name
+    def isValidLUASyntax(self, lua_code: str, isFile: bool = False) -> bool:
+        if isFile:
+            temp_file_path = lua_code
+        else:
+            with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
+                temp_file.write(lua_code.encode('utf-8'))
+                temp_file_path = temp_file.name
 
         try:
             result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
@@ -43,7 +46,8 @@ class Hercules:
             else:
                 return False
         finally:
-            os.remove(temp_file_path)
+            if not isFile:
+                os.remove(temp_file_path)
 
     def obfuscate(self, file_path: str, bitkey: int):
         old_wd = os.getcwd()
@@ -54,7 +58,7 @@ class Hercules:
         self._program_logger.info(f"Obfuscating file: {file_path} with flags: {flags}")
         
         try:
-            result = subprocess.run([self._lua, "hercules.lua", file_path, "--overwrite"],
+            result = subprocess.run([self._lua, "hercules.lua", file_path, flags, "--overwrite"],
                                     check=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
@@ -67,7 +71,11 @@ class Hercules:
         if result.returncode != 0:
             return False
         else:
-            return True
+            if self.isValidLUASyntax(file_path, True):
+                return True
+            else:
+                self._program_logger.error(f"Obfuscation failed. Invalid LUA syntax in file: {file_path}")
+                return False
 
     @lru_cache(maxsize=None)
     def find_method(self, method_name):
@@ -123,23 +131,54 @@ if __name__ == '__main__':
     obfuscator = Hercules(None)
 
 
-    lua_test = r'''-- Function to calculate Fibonacci numbers
-function fibonacci(n)
-    local fib = {0, 1} -- Initialize the first two Fibonacci numbers
-    for i = 3, n do
-        fib[i] = fib[i - 1] + fib[i - 2] -- Calculate the next Fibonacci number
-    end
-    return fib
+    lua_test_right = r'''-- Simple Lua Test File
+
+-- Function to print a greeting message
+function greet(name)
+    print("Hello, " .. name .. "!")
 end
--- Number of Fibonacci numbers to generate
-local num = 10
-local fib_sequence = fibonacci(num)
--- Print the Fibonacci sequence
-for i = 1, ndo
-    print(fib_sequence[i])
-end'''
+
+-- Function to add two numbers
+function add(a, b)
+    return a + b
+end
+
+-- Function to test a basic conditional statement
+function checkNumber(num)
+    if num > 0 then
+        print(num .. " is positive.")
+    elseif num < 0 then
+        print(num .. " is negative.")
+    else
+        print(num .. " is zero.")
+    end
+end
+
+-- Test the greet function
+greet("Serpensin")
+
+-- Test the add function
+local sum = add(5, 10)
+print("The sum of 5 and 10 is: " .. sum)
+
+-- Test the checkNumber function
+checkNumber(10)
+checkNumber(-3)
+checkNumber(0)'''
+
+    lua_test_wrong = r'''-- Simple Lua Test File
+
+-- Function to print a greeting message
+function greet(name)
+    print("Hello, " . name . "!")
+end
+
+greet("Serpensin")
+    '''
+
 
     
     
-    obfuscator.obfuscate("C:/Users/wissm/OneDrive/Dokumente/Visual Studio Repos/DiscordBots-Hercules/Hercules/Hercules-Bot/Buffer/970119359840284743_url.lua", 31)
+    print(obfuscator.isValidLUASyntax(lua_test_right))
+    print(obfuscator.isValidLUASyntax(lua_test_wrong))
         

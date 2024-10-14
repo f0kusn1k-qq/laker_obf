@@ -1,5 +1,4 @@
 ﻿#Import
-from random import randrange
 import time
 startupTime_start = time.time()
 import aiohttp
@@ -18,6 +17,7 @@ import sys
 from CustomModules import hercules
 from CustomModules import log_handler
 from dotenv import load_dotenv
+from random import randrange
 from typing import Optional, Any, Union, Tuple
 from urllib.parse import urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -258,6 +258,7 @@ class aclient(discord.AutoShardedClient):
 / __  /  __/ | | (__| |_| | |  __/\__ \
 \/ /_/ \___|_|  \___|\__,_|_|\___||___/
         ''')
+        bot.loop.create_task(Tasks.health_server())
         global start_time
         start_time = datetime.datetime.now(datetime.UTC)
         program_logger.info(f"Initialization completed in {time.time() - startupTime_start} seconds.")
@@ -283,6 +284,22 @@ class SignalHandler:
 if platform.system() == 'Windows':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+
+
+class Tasks():
+    async def health_server():
+        async def __health_check(request):
+            return aiohttp.web.Response(text="Healthy")
+
+        app = aiohttp.web.Application()
+        app.router.add_get('/health', __health_check)
+        runner = aiohttp.web.AppRunner(app)
+        await runner.setup()
+        site = aiohttp.web.TCPSite(runner, '0.0.0.0', 5000)
+        try:
+            await site.start()
+        except OSError as e:
+            program_logger.warning(f'Error while starting health server: {e}')
 
 
 #Functions
@@ -586,7 +603,7 @@ async def self(interaction: discord.Interaction):
     embed.add_field(name="Sentry-Version", value=f"{sentry_sdk.consts.VERSION}", inline=True)
 
     embed.add_field(name="Repo", value=f"[GitLab](https://gitlab.bloodygang.com/Serpensin/Discord-Bot-Base)", inline=True)
-    embed.add_field(name="Invite", value=f"[Invite me](https://discord.com/api/oauth2/authorize?client_id={bot.user.id}&permissions=8&scope=bot)", inline=True)
+    embed.add_field(name="Invite", value=f"[Invite me](https://discord.com/api/oauth2/authorize?client_id={bot.user.id}&permissions=117824&scope=bot)", inline=True)
     embed.add_field(name="\u200b", value="\u200b", inline=True)
 
     if interaction.user.id == int(OWNERID):
