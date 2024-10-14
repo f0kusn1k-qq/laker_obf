@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  dbdstats:
+  bot:
     container_name: Hercules
     ports:
       - "5000:5000"
@@ -10,13 +10,13 @@ services:
         condition: any
     environment:
       SENTRY_DSN: SENTRY_DSN_FOR_ERROR_REPORTING
-      support_server: ID_OF_SUPPORTSERVER
+      SUPPORT_SERVER: ID_OF_SUPPORTSERVER
       TOKEN: BOT_TOKEN
       OWNER_ID: DISCORD_ID_OF_OWNER
       LOG_LEVEL: INFO
     image: serpensin/hercules
     volumes:
-      - log:/app/Hercules
+      - log:/app/Hercules-Bot
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
