@@ -36,6 +36,7 @@
     <Content Include=".env" />
     <Content Include=".env.template" />
     <Content Include="requirements.txt" />
+    <Content Include="watermark.lua" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomModules\" />

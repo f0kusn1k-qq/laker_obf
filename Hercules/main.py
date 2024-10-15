@@ -35,7 +35,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.0.1"
+BOT_VERSION = "1.1.0"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -678,7 +678,17 @@ async def self(interaction: discord.Interaction):
         name="/obfuscate_file [file]",
         value="Upload a `.lua` file along with this command. Hercules will add it to the queue and notify you once it's done.",
         inline=False
-    ) 
+    )
+    embed.add_field(
+        name="/check_url [url]",
+        value="Check if a URL (e.g. from pastebin) contains valid Lua syntax.",
+        inline=False
+    )
+    embed.add_field(
+        name="/check_file [file]",
+        value="Upload a `.lua` file along with this command to check if it contains valid Lua syntax.",
+        inline=False
+    )
     embed.set_footer(text="Happy obfuscating! 🛡️")
     await interaction.response.send_message(embed=embed)
 
@@ -752,9 +762,9 @@ class ModeSelectionView(discord.ui.View):
 @discord.app_commands.describe(url = 'The URL of the Lua file.')
 async def self(interaction: discord.Interaction, url: str):
     await interaction.response.defer(ephemeral=True)
-    valid, lua_code = await Functions.is_valid_url_and_lua_syntax(url)
+    valid, conout = await Functions.is_valid_url_and_lua_syntax(url)
     if not valid:
-        await interaction.edit_original_response(content="The URL is not reachable or does not contain valid Lua syntax.")
+        await interaction.edit_original_response(content=f"The URL is not reachable or does not contain valid Lua syntax.:\n```txt\n{conout}```")
         return
     else:
         view = ModeSelectionView()
@@ -766,7 +776,7 @@ async def self(interaction: discord.Interaction, url: str):
 
         file_path = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_url.lua')
         with open(file_path, 'w', encoding='utf8') as f:
-            f.write(lua_code)
+            f.write(conout)
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
         if not success:
@@ -810,6 +820,46 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
             await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
         else:
             await Functions.send_file(interaction, file_path)
+
+
+#Errorcheck from url
+@tree.command(name = 'check_url', description = 'Check if the URL is reachable and contains valid Lua syntax.')
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.describe(url = 'The URL to check.')
+async def self(interaction: discord.Interaction, url: str):
+    await interaction.response.defer(ephemeral=True)
+    valid, conout = await Functions.is_valid_url_and_lua_syntax(url)
+    if not valid:
+        await interaction.edit_original_response(content=f"The URL is not reachable or does not contain valid Lua syntax.:\n```txt\n{conout}```")
+    else:
+        await interaction.edit_original_response(content="The URL is reachable and contains valid Lua syntax.")
+
+
+#Errorcheck from file
+@tree.command(name = 'check_file', description = 'Check if the uploaded file contains valid Lua syntax.')
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.describe(file = 'The file to check.')
+async def self(interaction: discord.Interaction, file: discord.Attachment):
+    await interaction.response.defer(ephemeral=True)
+    if not file.filename.endswith('.lua'):
+        await interaction.edit_original_response(content="Please upload a `.lua` file.")
+        return
+    if file.size > 1024 * 1024 * 5:
+        await interaction.edit_original_response(content="The file is too big. Please upload a file smaller than 5 MB.")
+        return
+
+    file_path = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_file.lua')
+    with open(file_path, 'wb') as f:
+        f.write(await file.read())
+
+    with open(file_path, 'r', encoding='utf8') as f:
+        lua_code = f.read()
+
+    isValid, conout = Hercules.isValidLUASyntax(lua_code)
+    if not isValid:
+        await interaction.edit_original_response(content=f"The uploaded file does not contain valid Lua syntax.:\n```txt\n{conout}```")
+    else:
+        await interaction.edit_original_response(content="The uploaded file contains valid Lua syntax.")
 
 
 

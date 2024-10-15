@@ -63,7 +63,7 @@ class Hercules:
             
         except subprocess.CalledProcessError as e:
             self._program_logger.error(f"Error occurred: {e.output.decode()}\nFile: {file_path}")
-            return
+            return False, e.output.decode()
         finally:
             os.chdir(old_wd)
         if result.returncode != 0:

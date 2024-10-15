@@ -5,6 +5,7 @@ WORKDIR /app
 COPY CustomModules ./CustomModules
 COPY *.py .
 COPY requirements.txt .
+COPY watermark.lua .
 
 ENV TERM=xterm
 ENV PYTHONUNBUFFERED=1
@@ -17,7 +18,8 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libc-dev l
     apk add git lua5.4-dev luarocks5.4 && \
     ln -s /usr/bin/luarocks-5.4 /usr/bin/luarocks && \
     luarocks install luacheck && \
-    git clone "https://github.com/Serpensin/hercules-obfuscator.git" Obfuscator && \
+    git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator && \
+    mv watermark.lua Obfuscator/src/modules && \
     python -m pip install --upgrade pip && \
     pip install --upgrade setuptools wheel && \
     pip install -r requirements.txt && \
@@ -30,9 +32,9 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libc-dev l
 
 LABEL maintainer="Discord: piko.piko.no.mi (970119359840284743)" \
       commit=$COMMIT \
-      description="Hrcules Bot for obfuscating lua files." \
+      description="Hercules Bot for obfuscating lua files." \
       release=$BUILD_DATE \
-      VERSION="1.0.1" \
+      VERSION="1.1.0" \
       url="https://gitlab.bloodygang.com/Serpensin/Hercules"
 
 CMD ["python3", "main.py"]
