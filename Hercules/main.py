@@ -14,6 +14,7 @@ import re
 import sentry_sdk
 import signal
 import sys
+from CustomModules import bot_directory
 from CustomModules import hercules
 from CustomModules import log_handler
 from dotenv import load_dotenv
@@ -48,6 +49,7 @@ TOKEN = os.getenv('TOKEN')
 OWNERID = os.getenv('OWNER_ID')
 LOG_LEVEL = os.getenv('LOG_LEVEL')
 SUPPORTID = os.getenv('SUPPORT_SERVER')
+TOPGG_TOKEN = os.getenv('TOPGG_TOKEN')
 
 #Logger init
 log_manager = log_handler.LogManager(LOG_FOLDER, BOT_NAME, LOG_LEVEL)
@@ -247,6 +249,11 @@ class aclient(discord.AutoShardedClient):
         await tree.sync()
         discord_logger.info('Synced.')
         self.synced = True
+        stats = bot_directory.Stats(bot=bot,
+                                    logger=program_logger,
+                                    TOPGG_TOKEN=TOPGG_TOKEN,
+                                    )
+        bot.loop.create_task(stats.task())
 
     async def on_ready(self):
         await bot.change_presence(activity = self.Presence.get_activity(), status = self.Presence.get_status())
