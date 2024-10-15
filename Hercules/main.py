@@ -20,7 +20,7 @@ from CustomModules import log_handler
 from dotenv import load_dotenv
 from random import randrange
 from typing import Optional, Any, Tuple
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
@@ -360,12 +360,14 @@ class Functions():
         return item_object
 
     async def is_valid_url_and_lua_syntax(url: str) -> Tuple[bool, str]:
+        url = unquote(url)
+
         url_pattern = re.compile(
-            r'^(http|https):\/\/'  # http:// oder https://
-            r'(\w+:{0,1}\w*@)?'  # Userdata (optional)
-            r'([a-zA-Z0-9.-]+)'  # Domain-Name
-            r'(:[0-9]+)?'  # Port (optional)
-            r'(\/.*)?$'  # Path (optional)
+            r'^(https?):\/\/'
+            r'([a-zA-Z0-9]+(:[a-zA-Z0-9]+)?@)?'
+            r'(([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,})'
+            r'(:[0-9]{1,5})?'
+            r'(\/[a-zA-Z0-9._\-\/]*)?$'
         )
 
         if not url_pattern.match(url):
