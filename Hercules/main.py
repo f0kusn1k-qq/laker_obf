@@ -19,7 +19,7 @@ from CustomModules import hercules
 from CustomModules import log_handler
 from dotenv import load_dotenv
 from random import randrange
-from typing import Optional, Any, Union, Tuple
+from typing import Optional, Any, Tuple
 from urllib.parse import urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -35,7 +35,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.1.1"
+BOT_VERSION = "1.1.2"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -359,7 +359,7 @@ class Functions():
                 pass
         return item_object
 
-    async def is_valid_url_and_lua_syntax(url: str) -> Tuple[bool, Union[str, None]]:
+    async def is_valid_url_and_lua_syntax(url: str) -> Tuple[bool, str]:
         url_pattern = re.compile(
             r'^(http|https):\/\/'  # http:// oder https://
             r'(\w+:{0,1}\w*@)?'  # Userdata (optional)
@@ -369,7 +369,7 @@ class Functions():
         )
 
         if not url_pattern.match(url):
-            return False
+            return False, "Invalid URL."
 
         try:
             async with aiohttp.ClientSession() as session:
