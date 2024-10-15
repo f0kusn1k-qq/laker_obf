@@ -35,11 +35,29 @@
   <ItemGroup>
     <Content Include=".env" />
     <Content Include=".env.template" />
+    <Content Include="Obfuscator\LICENSE" />
+    <Content Include="Obfuscator\README.md" />
+    <Content Include="Obfuscator\src\config.lua" />
+    <Content Include="Obfuscator\src\hercules.lua" />
+    <Content Include="Obfuscator\src\modules\bytecode_encoder.lua" />
+    <Content Include="Obfuscator\src\modules\compressor.lua" />
+    <Content Include="Obfuscator\src\modules\control_flow_obfuscator.lua" />
+    <Content Include="Obfuscator\src\modules\dynamic_code_generator.lua" />
+    <Content Include="Obfuscator\src\modules\function_inliner.lua" />
+    <Content Include="Obfuscator\src\modules\garbage_code_inserter.lua" />
+    <Content Include="Obfuscator\src\modules\opaque_predicate_injector.lua" />
+    <Content Include="Obfuscator\src\modules\string_encoder.lua" />
+    <Content Include="Obfuscator\src\modules\variable_renamer.lua" />
+    <Content Include="Obfuscator\src\modules\watermark.lua" />
+    <Content Include="Obfuscator\src\pipeline.lua" />
     <Content Include="requirements.txt" />
     <Content Include="watermark.lua" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomModules\" />
+    <Folder Include="Obfuscator\" />
+    <Folder Include="Obfuscator\src\" />
+    <Folder Include="Obfuscator\src\modules\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="H:\venvs\Hercules\">

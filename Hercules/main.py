@@ -35,7 +35,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.1.0"
+BOT_VERSION = "1.1.1"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -375,7 +375,7 @@ class Functions():
             async with aiohttp.ClientSession() as session:
                 async with session.get(url) as response:
                     if response.status not in [200, 204, 301, 302]:
-                        return False, None
+                        return False, f"HTTP Error: {response.status}"
                     lua_code = await response.text()
                     isValid, conout = Hercules.isValidLUASyntax(lua_code)
                     if isValid:
@@ -384,7 +384,7 @@ class Functions():
                         return False, conout
         except aiohttp.ClientError as e:
             program_logger.error(f"Error fetching URL: {e}")
-            return False, None
+            return False, e
 
     async def send_file(interaction: discord.Interaction, file_path: str):
         try:
@@ -808,6 +808,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
     isValid, conout = Hercules.isValidLUASyntax(lua_code)
     if not isValid:
         await interaction.edit_original_response(content=f"The uploaded file does not contain valid Lua syntax.:\n```txt\n{conout}```")
+        os.remove(file_path)
     else:
         view = ModeSelectionView()
         await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {file.filename}.", view=view)
@@ -818,6 +819,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         success, conout = Hercules.obfuscate(file_path, selected_bits)
         if not success:
             await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
+            os.remove(file_path)
         else:
             await Functions.send_file(interaction, file_path)
 
@@ -860,6 +862,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         await interaction.edit_original_response(content=f"The uploaded file does not contain valid Lua syntax.:\n```txt\n{conout}```")
     else:
         await interaction.edit_original_response(content="The uploaded file contains valid Lua syntax.")
+    os.remove(file_path)
 
 
 

@@ -30,7 +30,6 @@ class Hercules:
         ]
 
 
-    @lru_cache(maxsize=50)
     def isValidLUASyntax(self, lua_code: str, isFile: bool = False) -> tuple[bool,str]:
         if isFile:
             temp_file_path = lua_code
