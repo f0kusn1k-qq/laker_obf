@@ -377,10 +377,11 @@ class Functions():
                     if response.status not in [200, 204, 301, 302]:
                         return False, None
                     lua_code = await response.text()
-                    if Hercules.isValidLUASyntax(lua_code):
+                    isValid, conout = Hercules.isValidLUASyntax(lua_code)
+                    if isValid:
                         return True, lua_code
                     else:
-                        return False, None
+                        return False, conout
         except aiohttp.ClientError as e:
             program_logger.error(f"Error fetching URL: {e}")
             return False, None
@@ -767,9 +768,9 @@ async def self(interaction: discord.Interaction, url: str):
         with open(file_path, 'w', encoding='utf8') as f:
             f.write(lua_code)
 
-        success = Hercules.obfuscate(file_path, selected_bits)
+        success, conout = Hercules.obfuscate(file_path, selected_bits)
         if not success:
-            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.")
+            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
         else:
             await Functions.send_file(interaction, file_path)
 
@@ -794,8 +795,9 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
     with open(file_path, 'r', encoding='utf8') as f:
         lua_code = f.read()
 
-    if not Hercules.isValidLUASyntax(lua_code):
-        await interaction.edit_original_response(content="The uploaded file does not contain valid Lua syntax.")
+    isValid, conout = Hercules.isValidLUASyntax(lua_code)
+    if not isValid:
+        await interaction.edit_original_response(content=f"The uploaded file does not contain valid Lua syntax.:\n```txt\n{conout}```")
     else:
         view = ModeSelectionView()
         await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {file.filename}.", view=view)
@@ -803,9 +805,9 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
 
         selected_bits = view.selected_bits
 
-        success = Hercules.obfuscate(file_path, selected_bits)
+        success, conout = Hercules.obfuscate(file_path, selected_bits)
         if not success:
-            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.")
+            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
         else:
             await Functions.send_file(interaction, file_path)
 

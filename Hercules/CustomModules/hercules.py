@@ -31,7 +31,7 @@ class Hercules:
 
 
     @lru_cache(maxsize=50)
-    def isValidLUASyntax(self, lua_code: str, isFile: bool = False) -> bool:
+    def isValidLUASyntax(self, lua_code: str, isFile: bool = False) -> tuple[bool,str]:
         if isFile:
             temp_file_path = lua_code
         else:
@@ -41,13 +41,13 @@ class Hercules:
 
         result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
         if result.returncode in [0,1]:
-            return True
+            return True, result.stdout
         else:
             if not isFile:
                 os.remove(temp_file_path)
-            return False
+            return False, result.stdout
 
-    def obfuscate(self, file_path: str, bitkey: int):
+    def obfuscate(self, file_path: str, bitkey: int) -> tuple[bool,str]:
         old_wd = os.getcwd()
         os.chdir(self._obfuscator_folder)
         enabled_features = self._get_active_keys(bitkey)
@@ -67,13 +67,14 @@ class Hercules:
         finally:
             os.chdir(old_wd)
         if result.returncode != 0:
-            return False
+            return False, result.stdout.decode()
         else:
-            if self.isValidLUASyntax(file_path, True):
-                return True
+            isValid, conout = self.isValidLUASyntax(file_path, True)
+            if isValid:
+                return True, conout
             else:
                 self._program_logger.error(f"Obfuscation failed. Invalid LUA syntax in file: {file_path}")
-                return False
+                return False, conout
 
     @lru_cache(maxsize=None)
     def find_method(self, method_name):
