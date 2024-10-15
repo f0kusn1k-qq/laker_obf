@@ -39,15 +39,13 @@ class Hercules:
                 temp_file.write(lua_code.encode('utf-8'))
                 temp_file_path = temp_file.name
 
-        try:
-            result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
-            if result.returncode in [0,1]:
-                return True
-            else:
-                return False
-        finally:
+        result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
+        if result.returncode in [0,1]:
+            return True
+        else:
             if not isFile:
                 os.remove(temp_file_path)
+            return False
 
     def obfuscate(self, file_path: str, bitkey: int):
         old_wd = os.getcwd()

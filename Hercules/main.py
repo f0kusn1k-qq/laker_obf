@@ -35,7 +35,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.0.0"
+BOT_VERSION = "1.0.1"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -110,7 +110,7 @@ class aclient(discord.AutoShardedClient):
     def __init__(self):
 
         intents = discord.Intents.default()
-        intents.guild_messages = True
+        #intents.guild_messages = True
         #intents.members = True
 
         super().__init__(owner_id = OWNERID,
