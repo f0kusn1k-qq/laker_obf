@@ -19,6 +19,6 @@ pyrsistent==0.20.0
 python-dotenv==1.0.1
 referencing==0.35.1
 rpds-py==0.20.0
-sentry-sdk==2.16.0
+sentry-sdk==2.17.0
 urllib3==2.2.3
-yarl==1.15.2
+yarl==1.15.4
