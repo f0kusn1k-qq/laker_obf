@@ -34,8 +34,8 @@ class Hercules:
         if isFile:
             temp_file_path = lua_code
         else:
-            with tempfile.NamedTemporaryFile(suffix=".lua", delete=False) as temp_file:
-                temp_file.write(lua_code.encode('utf-8'))
+            with tempfile.NamedTemporaryFile(suffix=".lua", delete=False, encoding='utf-8', mode='w') as temp_file:
+                temp_file.write(lua_code)
                 temp_file_path = temp_file.name
 
         result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)

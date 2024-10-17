@@ -14,6 +14,7 @@ import re
 import sentry_sdk
 import signal
 import sys
+import tempfile
 from CustomModules import bot_directory
 from CustomModules import hercules
 from CustomModules import log_handler
@@ -35,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.1.2"
+BOT_VERSION = "1.2.0"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -50,6 +51,8 @@ OWNERID = os.getenv('OWNER_ID')
 LOG_LEVEL = os.getenv('LOG_LEVEL')
 SUPPORTID = os.getenv('SUPPORT_SERVER')
 TOPGG_TOKEN = os.getenv('TOPGG_TOKEN')
+DEBUG_CHANNEL_ID = os.getenv('DEBUG_CHANNEL', '1296488362290446397')
+DEBUG_CHANNEL_ID = int(DEBUG_CHANNEL_ID) if DEBUG_CHANNEL_ID.isdigit() else 1296488362290446397
 
 #Logger init
 log_manager = log_handler.LogManager(LOG_FOLDER, BOT_NAME, LOG_LEVEL)
@@ -416,6 +419,43 @@ class Functions():
                 continue
         return "Could not create invite. There is either no text-channel, or I don't have the rights to create an invite."
 
+    async def send_debug_files(interaction: discord.Interaction, error_text: str, original_code: str) -> bool:
+        temp_file_path = ''
+        to_send = None
+        file_url = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_url.lua')
+        file_file = os.path.abspath(f'{BUFFER_FOLDER}{interaction.user.id}_file.lua')
+
+        if os.path.exists(file_url):
+            to_send = file_url
+        elif os.path.exists(file_file):
+            to_send = file_file
+        else:
+            return False
+
+        with tempfile.NamedTemporaryFile(suffix=".lua", delete=False, encoding='utf-8', mode='w') as original_temp:
+            original_temp.write(original_code)
+            orig_file_path = original_temp.name
+
+        channel: discord.TextChannel = await Functions.get_or_fetch('channel', DEBUG_CHANNEL_ID)
+
+        try:
+            if len(error_text) > 2000:
+                with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+                    temp_file.write(error_text)
+                    temp_file_path = temp_file.name
+                await channel.send(content=f"A error appeared during/after obfuscation.:\n", files=[discord.File(temp_file_path, filename='ErrorMessage.txt'), discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
+                return True
+            else:
+                await channel.send(content=f"A error appeared during/after obfuscation.:\n```txt\n{error_text}```", files=[discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
+                return True
+        except discord.errors.DiscordException as e:
+            program_logger.error(f'Error while sending debug files -> {e}')
+            return False
+        finally:
+            os.remove(orig_file_path)
+            os.remove(to_send)
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
 
 
 ##Owner Commands
@@ -738,6 +778,51 @@ class ModeSelectionView(discord.ui.View):
             self.stop()
 
 
+class AskSendDebug(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=20)
+        self.message: discord.Message = None
+        self.error_text: str = None
+        self.original_code: str
+        self.answered = False
+
+    @discord.ui.button(label='Yes', style=discord.ButtonStyle.success)
+    async def send_files_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.answered = True
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+        await interaction.response.edit_message(content='Sending...', view=self)
+
+        success = await Functions.send_debug_files(interaction, error_text=self.error_text, original_code=self.original_code)
+
+        if success:
+            await interaction.edit_original_response(content="Debug files sent successfully.", view=self)
+        else:
+            await interaction.edit_original_response(content="Debug files couldn't be sent!", view=self)
+
+    @discord.ui.button(label='No', style=discord.ButtonStyle.danger)
+    async def abort_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.answered = True
+        await self.no(interaction)
+
+    async def on_timeout(self):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+        if self.message and not self.answered:
+            await self.message.edit(content="Timeout: Debug files were not sent!", view=self)
+
+    async def no(self, interaction: discord.Interaction):
+        for item in self.children:
+            if isinstance(item, discord.ui.Button):
+                item.disabled = True
+
+        await interaction.response.edit_message(content="Debug files were not sent!", view=self)
+
+
 #Fetch file from URL
 @tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
 @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
@@ -749,6 +834,7 @@ async def self(interaction: discord.Interaction, url: str):
         await interaction.edit_original_response(content=f"The URL is not reachable or does not contain valid Lua syntax.:\n```txt\n{conout}```")
         return
     else:
+        original_code = conout
         view = ModeSelectionView()
 
         await interaction.edit_original_response(content=f"Please select the obfuscation methods you want to use for {url}.", view=view)
@@ -761,8 +847,21 @@ async def self(interaction: discord.Interaction, url: str):
             f.write(conout)
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
+        success = False
         if not success:
-            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
+            view = AskSendDebug()
+
+            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+                temp_file.write(conout)
+                temp_file_path = temp_file.name
+
+            message = await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.\nSend the original file to the owner for debug?", file=discord.File(temp_file_path, filename='Error.txt'), view=view, ephemeral=True)
+            await interaction.delete_original_response()
+            view.message = message
+            view.error_text = conout
+            view.original_code = original_code
+            await view.wait()
+            os.remove(temp_file_path)
         else:
             await Functions.send_file(interaction, file_path)
 
@@ -799,9 +898,21 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         selected_bits = view.selected_bits
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
+        success = False
         if not success:
-            await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.:\n```txt\n{conout}```")
-            os.remove(file_path)
+            view = AskSendDebug()
+
+            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+                temp_file.write(conout)
+                temp_file_path = temp_file.name
+
+            message = await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.\nSend the original file to the owner for debug?", file=discord.File(temp_file_path, filename='Error.txt'), view=view, ephemeral=True)
+            await interaction.delete_original_response()
+            view.message = message
+            view.error_text = conout
+            view.original_code = lua_code
+            await view.wait()
+            os.remove(temp_file_path)
         else:
             await Functions.send_file(interaction, file_path)
 
@@ -814,9 +925,13 @@ async def self(interaction: discord.Interaction, url: str):
     await interaction.response.defer(ephemeral=True)
     valid, conout = await Functions.is_valid_url_and_lua_syntax(url)
     if not valid:
-        await interaction.edit_original_response(content=f"The URL is not reachable or does not contain valid Lua syntax.:\n```txt\n{conout}```")
+        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+            temp_file.write(conout)
+            temp_file_path = temp_file.name
+        await interaction.followup.send(content=f"The URL is not reachable or does not contain valid Lua syntax.", file=discord.File(temp_file_path))
+        os.remove(temp_file_path)
     else:
-        await interaction.edit_original_response(content="The URL is reachable and contains valid Lua syntax.")
+        await interaction.followup.send(content="The URL is reachable and contains valid Lua syntax.")
 
 
 #Errorcheck from file
@@ -841,11 +956,23 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
 
     isValid, conout = Hercules.isValidLUASyntax(lua_code)
     if not isValid:
-        await interaction.edit_original_response(content=f"The uploaded file does not contain valid Lua syntax.:\n```txt\n{conout}```")
+        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+            temp_file.write(conout)
+            temp_file_path = temp_file.name
+        await interaction.followup.send(content=f"The uploaded file does not contain valid Lua syntax.", file=discord.File(temp_file_path))
+        os.remove(temp_file_path)
     else:
-        await interaction.edit_original_response(content="The uploaded file contains valid Lua syntax.")
+        await interaction.followup.send(content="The uploaded file contains valid Lua syntax.")
     os.remove(file_path)
 
+
+
+
+@tree.command(name='testing')
+async def self(interaction: discord.Interaction):
+    view=AskSendDebug()
+    await interaction.response.send_message("DEBUG", view=view)
+    view.message = await interaction.original_response()
 
 
 
