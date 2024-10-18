@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.0"
+BOT_VERSION = "1.2.1"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -664,7 +664,7 @@ async def self(interaction: discord.Interaction):
     embed.add_field(name="discord.py-Version", value=f"{discord.__version__}", inline=True)
     embed.add_field(name="Sentry-Version", value=f"{sentry_sdk.consts.VERSION}", inline=True)
 
-    embed.add_field(name="Repo", value=f"[GitLab](https://gitlab.bloodygang.com/Serpensin/Discord-Bot-Base)", inline=True)
+    embed.add_field(name="Repo", value=f"[GitLab](https://gitlab.bloodygang.com/Serpensin/Hercules)", inline=True)
     embed.add_field(name="Invite", value=f"[Invite me](https://discord.com/api/oauth2/authorize?client_id={bot.user.id}&permissions=117824&scope=bot)", inline=True)
     embed.add_field(name="\u200b", value="\u200b", inline=True)
 
@@ -965,14 +965,6 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         await interaction.followup.send(content="The uploaded file contains valid Lua syntax.")
     os.remove(file_path)
 
-
-
-
-@tree.command(name='testing')
-async def self(interaction: discord.Interaction):
-    view=AskSendDebug()
-    await interaction.response.send_message("DEBUG", view=view)
-    view.message = await interaction.original_response()
 
 
 
