@@ -847,7 +847,6 @@ async def self(interaction: discord.Interaction, url: str):
             f.write(conout)
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
-        success = False
         if not success:
             view = AskSendDebug()
 
@@ -898,7 +897,6 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         selected_bits = view.selected_bits
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
-        success = False
         if not success:
             view = AskSendDebug()
 
