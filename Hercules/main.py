@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.1"
+BOT_VERSION = "1.2.2"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -439,7 +439,7 @@ class Functions():
         channel: discord.TextChannel = await Functions.get_or_fetch('channel', DEBUG_CHANNEL_ID)
 
         try:
-            if len(error_text) > 2000:
+            if len(error_text) > 1900:
                 with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
                     temp_file.write(error_text)
                     temp_file_path = temp_file.name
@@ -847,6 +847,7 @@ async def self(interaction: discord.Interaction, url: str):
             f.write(conout)
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
+        success = False
         if not success:
             view = AskSendDebug()
 
@@ -897,6 +898,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         selected_bits = view.selected_bits
 
         success, conout = Hercules.obfuscate(file_path, selected_bits)
+        success = False
         if not success:
             view = AskSendDebug()
 
