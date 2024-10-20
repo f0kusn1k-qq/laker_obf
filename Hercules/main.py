@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.2"
+BOT_VERSION = "1.2.3"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -369,7 +369,7 @@ class Functions():
                         return False, conout
         except aiohttp.ClientError as e:
             program_logger.error(f"Error fetching URL: {e}")
-            return False, e
+            return False, "URL not reachable."
 
     async def send_file(interaction: discord.Interaction, file_path: str):
         try:
@@ -932,7 +932,7 @@ async def self(interaction: discord.Interaction, url: str):
         await interaction.followup.send(content="The URL is reachable and contains valid Lua syntax.")
 
 
-#Errorcheck from file
+#Error check from file
 @tree.command(name = 'check_file', description = 'Check if the uploaded file contains valid Lua syntax.')
 @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(file = 'The file to check.')
