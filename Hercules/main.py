@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.3"
+BOT_VERSION = "1.2.4"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -733,7 +733,8 @@ async def support(interaction: discord.Interaction):
 class ModeSelectionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=30)
-        self.selected_bits = (1 << len(Hercules.methods)) - 1
+        # Setzt das Bit nur für aktivierte Methoden
+        self.selected_bits = sum((1 << method['bitkey']) for method in Hercules.methods if method['enabled'])
         self.timedout = False
         self.buttons_per_row = 5
         self.create_buttons()
@@ -743,10 +744,14 @@ class ModeSelectionView(discord.ui.View):
 
     def create_buttons(self):
         for idx, method in enumerate(Hercules.methods):
+            if not method['enabled']:
+                continue
+            
             method_name = method['name']
             bit_position = method['bitkey']
             is_selected = self.selected_bits & (1 << bit_position) != 0
             row = (idx // self.buttons_per_row) + 1
+            
             button = self.MethodButton(label=method_name, bit_position=bit_position, selected=is_selected)
             button.row = row
             self.add_item(button)
