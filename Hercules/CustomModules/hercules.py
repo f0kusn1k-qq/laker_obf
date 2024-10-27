@@ -51,11 +51,11 @@ class Hercules:
         os.chdir(self._obfuscator_folder)
         enabled_features = self._get_active_keys(bitkey)
 
-        flags = " ".join([f"--{feature}" for feature in enabled_features])
+        flags = [f"--{feature}" for feature in enabled_features]
         self._program_logger.info(f"Obfuscating file: {file_path} with flags: {flags}")
         
         try:
-            result = subprocess.run([self._lua, "hercules.lua", file_path, flags, "--overwrite"],
+            result = subprocess.run([self._lua, "hercules.lua", file_path] + flags + ["--overwrite"],
                                     check=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)

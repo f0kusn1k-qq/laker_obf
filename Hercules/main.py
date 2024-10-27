@@ -733,7 +733,6 @@ async def support(interaction: discord.Interaction):
 class ModeSelectionView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=30)
-        # Setzt das Bit nur für aktivierte Methoden
         self.selected_bits = sum((1 << method['bitkey']) for method in Hercules.methods if method['enabled'])
         self.timedout = False
         self.buttons_per_row = 5
@@ -749,7 +748,6 @@ class ModeSelectionView(discord.ui.View):
             is_selected = self.selected_bits & (1 << bit_position) != 0
             row = (idx // self.buttons_per_row) + 1
     
-            # Button wird deaktiviert, falls die Methode nicht aktiviert ist
             button = self.MethodButton(
                 label=method_name,
                 bit_position=bit_position,
@@ -764,8 +762,8 @@ class ModeSelectionView(discord.ui.View):
             super().__init__(
                 label=label + (' (Selected)' if selected else ''),
                 style=discord.ButtonStyle.success if selected else discord.ButtonStyle.primary,
-                row=None,  # Stelle sicher, dass row als Parameter gesetzt wird, falls nötig
-                disabled=disabled  # Setzt den Button auf "disabled", falls die Methode deaktiviert ist
+                row=None,
+                disabled=disabled
             )
             self.bit_position = bit_position
 
@@ -913,11 +911,14 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
         if not success:
             view = AskSendDebug()
 
-            with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
-                temp_file.write(conout)
-                temp_file_path = temp_file.name
+            if len(conout) > 1900:
+                with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
+                    temp_file.write(conout)
+                    temp_file_path = temp_file.name
+                message = await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.\nSend the original file to the owner for debug?", file=discord.File(temp_file_path, filename='Error.txt'), view=view, ephemeral=True)
+            else:
+                message = await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.\nSend the original file to the owner for debug?\n```txt\n{conout}```")
 
-            message = await interaction.followup.send(f"{interaction.user.mention}\nObfuscation failed. Please try again.\nSend the original file to the owner for debug?", file=discord.File(temp_file_path, filename='Error.txt'), view=view, ephemeral=True)
             await interaction.delete_original_response()
             view.message = message
             view.error_text = conout
