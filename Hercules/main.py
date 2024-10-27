@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.4"
+BOT_VERSION = "1.2.5"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -744,21 +744,29 @@ class ModeSelectionView(discord.ui.View):
 
     def create_buttons(self):
         for idx, method in enumerate(Hercules.methods):
-            if not method['enabled']:
-                continue
-            
             method_name = method['name']
             bit_position = method['bitkey']
             is_selected = self.selected_bits & (1 << bit_position) != 0
             row = (idx // self.buttons_per_row) + 1
-            
-            button = self.MethodButton(label=method_name, bit_position=bit_position, selected=is_selected)
+    
+            # Button wird deaktiviert, falls die Methode nicht aktiviert ist
+            button = self.MethodButton(
+                label=method_name,
+                bit_position=bit_position,
+                selected=is_selected,
+                disabled=not method['enabled']
+            )
             button.row = row
             self.add_item(button)
 
     class MethodButton(discord.ui.Button):
-        def __init__(self, label, bit_position, selected=False):
-            super().__init__(label=label + (' (Selected)' if selected else ''), style=discord.ButtonStyle.success if selected else discord.ButtonStyle.primary)
+        def __init__(self, label, bit_position, selected=False, disabled=False):
+            super().__init__(
+                label=label + (' (Selected)' if selected else ''),
+                style=discord.ButtonStyle.success if selected else discord.ButtonStyle.primary,
+                row=None,  # Stelle sicher, dass row als Parameter gesetzt wird, falls nötig
+                disabled=disabled  # Setzt den Button auf "disabled", falls die Methode deaktiviert ist
+            )
             self.bit_position = bit_position
 
         async def callback(self, interaction: discord.Interaction):
@@ -830,7 +838,7 @@ class AskSendDebug(discord.ui.View):
 
 #Fetch file from URL
 @tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(url = 'The URL of the Lua file.')
 async def self(interaction: discord.Interaction, url: str):
     await interaction.response.defer(ephemeral=True)
@@ -872,7 +880,7 @@ async def self(interaction: discord.Interaction, url: str):
 
 #Fetch file from upload
 @tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(file = 'File to be obfuscated.')
 async def self(interaction: discord.Interaction, file: discord.Attachment):
     await interaction.response.defer(ephemeral=True)
