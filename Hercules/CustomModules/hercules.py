@@ -27,6 +27,9 @@ class Hercules:
             {'key': 'bytecode_encoding', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
             {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': True},
             {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6, 'enabled': True},
+            {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': True},
+            {'key': 'virtual_machine', 'name': 'Virtual Machine', 'bitkey': 8, 'enabled': True},
+            {'key': 'wrap_in_func', 'name': 'Function Wrapping', 'bitkey': 9, 'enabled': True}
         ]
 
 

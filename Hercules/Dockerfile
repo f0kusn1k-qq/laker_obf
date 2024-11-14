@@ -34,7 +34,7 @@ LABEL maintainer="Discord: piko.piko.no.mi (970119359840284743)" \
       commit=$COMMIT \
       description="Hercules Bot for obfuscating lua files." \
       release=$BUILD_DATE \
-      VERSION="1.2.5" \
-      url="https://gitlab.bloodygang.com/Serpensin/Hercules"
+      VERSION="1.2.6" \
+      url="https://github.com/Serpensin/DiscordBots-Hercules"
 
 CMD ["python3", "main.py"]
