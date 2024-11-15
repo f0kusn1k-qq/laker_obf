@@ -51,8 +51,8 @@ OWNERID = os.getenv('OWNER_ID')
 LOG_LEVEL = os.getenv('LOG_LEVEL')
 SUPPORTID = os.getenv('SUPPORT_SERVER')
 TOPGG_TOKEN = os.getenv('TOPGG_TOKEN')
-DEBUG_CHANNEL_ID = os.getenv('DEBUG_CHANNEL', '1296488362290446397')
-DEBUG_CHANNEL_ID = int(DEBUG_CHANNEL_ID) if DEBUG_CHANNEL_ID.isdigit() else 1296488362290446397
+DEBUG_CHANNEL_ID = os.getenv('DEBUG_CHANNEL', '1306784336619503737')
+DEBUG_CHANNEL_ID = int(DEBUG_CHANNEL_ID) if DEBUG_CHANNEL_ID.isdigit() else 1306784336619503737
 
 #Logger init
 log_manager = log_handler.LogManager(LOG_FOLDER, BOT_NAME, LOG_LEVEL)
@@ -664,7 +664,7 @@ async def self(interaction: discord.Interaction):
     embed.add_field(name="discord.py-Version", value=f"{discord.__version__}", inline=True)
     embed.add_field(name="Sentry-Version", value=f"{sentry_sdk.consts.VERSION}", inline=True)
 
-    embed.add_field(name="Repo", value=f"[GitLab](https://gitlab.bloodygang.com/Serpensin/Hercules)", inline=True)
+    embed.add_field(name="Repo", value=f"[GitHub](https://github.com/Serpensin/DiscordBots-Hercules)", inline=True)
     embed.add_field(name="Invite", value=f"[Invite me](https://discord.com/api/oauth2/authorize?client_id={bot.user.id}&permissions=117824&scope=bot)", inline=True)
     embed.add_field(name="\u200b", value="\u200b", inline=True)
 
