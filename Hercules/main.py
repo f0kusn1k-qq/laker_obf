@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.2.7"
+BOT_VERSION = "1.3.0"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -836,8 +836,20 @@ class AskSendDebug(discord.ui.View):
 #Fetch file from URL
 @tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
 # @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
-@discord.app_commands.describe(url = 'The URL of the Lua file.')
-async def self(interaction: discord.Interaction, url: str):
+@discord.app_commands.describe(url = 'The URL of the Lua file.',
+                               optional_preset = 'Optional presets that can be used.'
+                               )
+@discord.app_commands.choices(
+    optional_preset = [
+        discord.app_commands.Choice(name='Minimal parameters for lighter obfuscation.', value='min'),
+        discord.app_commands.Choice(name='Moderate parameters for balanced obfuscation.', value='mid'),
+        discord.app_commands.Choice(name='Maximum parameters for heavier obfuscation.', value='max')
+        ]
+    )
+async def self(interaction: discord.Interaction,
+               url: str,
+               optional_preset: str = None
+               ):
     await interaction.response.defer(ephemeral=True)
     valid, conout = await Functions.is_valid_url_and_lua_syntax(url)
     if not valid:
@@ -856,8 +868,8 @@ async def self(interaction: discord.Interaction, url: str):
         with open(file_path, 'w', encoding='utf8') as f:
             f.write(conout)
 
-        success, conout = Hercules.obfuscate(file_path, selected_bits)
-        if success:
+        success, conout = Hercules.obfuscate(file_path, selected_bits, optional_preset)
+        if not success:
             view = AskSendDebug()
 
             with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:

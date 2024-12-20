@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 from functools import lru_cache
+from typing import Literal, Optional
 
 
 class Hercules:
@@ -30,13 +31,15 @@ class Hercules:
             {'key': 'control_flow', 'name': 'Control Flow', 'bitkey': 0, 'enabled': True},
             {'key': 'variable_renaming', 'name': 'Variable Renaming', 'bitkey': 1, 'enabled': True},
             {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2, 'enabled': True},
-            {'key': 'opaque_predicates', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': True},
-            {'key': 'bytecode_encoding', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
+            {'key': 'opaque_preds', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': True},
+            {'key': 'bytecode_encoder', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
             {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': True},
             {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6, 'enabled': True},
             {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': True},
             {'key': 'virtual_machine', 'name': 'Virtual Machine', 'bitkey': 8, 'enabled': True},
-            {'key': 'wrap_in_func', 'name': 'Function Wrapping', 'bitkey': 9, 'enabled': True}
+            {'key': 'wrap_in_func', 'name': 'Function Wrapping', 'bitkey': 9, 'enabled': True},
+            {'key': 'func_inlining', 'name': 'Function Inlining', 'bitkey': 10, 'enabled': True},
+            {'key': 'dynamic_code', 'name': 'Dynamic Code', 'bitkey': 11, 'enabled': True},
         ]
 
     def _log_and_exit(self, error_msg, info_msg):
@@ -77,13 +80,14 @@ class Hercules:
                 os.remove(temp_file_path)
             return False, result.stdout
 
-    def obfuscate(self, file_path: str, bitkey: int) -> tuple[bool, str]:
+    def obfuscate(self, file_path: str, bitkey: int, optional_preset: Optional[Literal["min", "mid", "max"]]) -> tuple[bool, str]:
         """
-        Obfuscates the given LUA file using the specified bitkey.
+        Obfuscates the given LUA file using the specified bitkey and optional preset.
 
         Args:
-            file_path: Path to the LUA file to obfuscate.
+            file_path: Path to the LUA file to be obfuscated.
             bitkey: Bitkey representing the obfuscation methods to use.
+            optional_preset: Optional preset for obfuscation level ("min", "mid", "max").
 
         Returns:
             A tuple containing a boolean indicating if the obfuscation was successful and the output message.
@@ -93,6 +97,8 @@ class Hercules:
         enabled_features = self._get_active_keys(bitkey)
 
         flags = [f"--{feature}" for feature in enabled_features]
+        if optional_preset:
+            flags.append(f"--{optional_preset}")
         self._program_logger.info(f"Obfuscating file: {file_path} with flags: {flags}")
 
         try:
