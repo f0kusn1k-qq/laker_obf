@@ -31,7 +31,6 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libc-dev l
     rm -rf /root/.cache/pip
 
 LABEL maintainer="Discord: piko.piko.no.mi (970119359840284743)" \
-      commit=$COMMIT \
       description="Hercules Bot for obfuscating lua files." \
       release=$BUILD_DATE \
       VERSION="1.3.0" \
