@@ -31,15 +31,15 @@ class Hercules:
             {'key': 'control_flow', 'name': 'Control Flow', 'bitkey': 0, 'enabled': True},
             {'key': 'variable_renaming', 'name': 'Variable Renaming', 'bitkey': 1, 'enabled': True},
             {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2, 'enabled': True},
-            {'key': 'opaque_preds', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': True},
+            {'key': 'opaque_preds', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': False},
             {'key': 'bytecode_encoder', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
             {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': True},
             {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6, 'enabled': True},
-            {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': True},
+            {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': False},
             {'key': 'virtual_machine', 'name': 'Virtual Machine', 'bitkey': 8, 'enabled': True},
             {'key': 'wrap_in_func', 'name': 'Function Wrapping', 'bitkey': 9, 'enabled': True},
-            {'key': 'func_inlining', 'name': 'Function Inlining', 'bitkey': 10, 'enabled': True},
-            {'key': 'dynamic_code', 'name': 'Dynamic Code', 'bitkey': 11, 'enabled': True},
+            {'key': 'func_inlining', 'name': 'Function Inlining', 'bitkey': 10, 'enabled': False},
+            {'key': 'dynamic_code', 'name': 'Dynamic Code', 'bitkey': 11, 'enabled': False},
         ]
 
     def _log_and_exit(self, error_msg, info_msg):
