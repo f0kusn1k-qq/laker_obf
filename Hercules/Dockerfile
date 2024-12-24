@@ -33,7 +33,7 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev python3-dev libc-dev l
 LABEL maintainer="Discord: piko.piko.no.mi (970119359840284743)" \
       description="Hercules Bot for obfuscating lua files." \
       release=$BUILD_DATE \
-      VERSION="1.3.0" \
+      VERSION="1.3.1" \
       url="https://github.com/Serpensin/DiscordBots-Hercules"
 
 CMD ["python3", "main.py"]
