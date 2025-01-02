@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.3.1"
+BOT_VERSION = "1.3.2"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -442,10 +442,10 @@ class Functions():
                 with tempfile.NamedTemporaryFile(suffix=".txt", delete=False, encoding='utf-8', mode='w') as temp_file:
                     temp_file.write(error_text)
                     temp_file_path = temp_file.name
-                await channel.send(content=f"A error appeared during/after obfuscation.:\n", files=[discord.File(temp_file_path, filename='ErrorMessage.txt'), discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
+                await channel.send(content=f"A error appeared during/after obfuscation, executed by {interaction.user.mention}.:\n", files=[discord.File(temp_file_path, filename='ErrorMessage.txt'), discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
                 return True
             else:
-                await channel.send(content=f"A error appeared during/after obfuscation.:\n```txt\n{error_text}```", files=[discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
+                await channel.send(content=f"A error appeared during/after obfuscation, executed by {interaction.user.mention}.:\n```txt\n{error_text}```", files=[discord.File(orig_file_path, filename='Input.lua'), discord.File(to_send, filename='Output.lua')])
                 return True
         except discord.errors.DiscordException as e:
             program_logger.error(f'Error while sending debug files -> {e}')

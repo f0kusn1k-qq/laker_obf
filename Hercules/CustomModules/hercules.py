@@ -33,7 +33,7 @@ class Hercules:
             {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2, 'enabled': True},
             {'key': 'opaque_preds', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': True},
             {'key': 'bytecode_encoder', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
-            {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': True},
+            {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': False},
             {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6, 'enabled': True},
             {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': False},
             {'key': 'virtual_machine', 'name': 'Virtual Machine', 'bitkey': 8, 'enabled': True},
