@@ -20,9 +20,9 @@ RUN apk add --virtual .build-deps gcc musl-dev python3-dev libc-dev linux-header
     luarocks install luacheck && \
     git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator && \
     mv watermark.lua Obfuscator/src/modules && \
-    python -m pip install --upgrade pip && \
-    pip install --upgrade setuptools wheel && \
-    pip install -r requirements.txt && \
+    python -m pip install --root-user-action ignore --upgrade pip && \
+    pip install --root-user-action ignore --upgrade setuptools wheel && \
+    pip install --root-user-action ignore -r requirements.txt && \
     apk del .build-deps && \
     find /usr/local \
     \( -type d -a -name test -o -name tests \) \
