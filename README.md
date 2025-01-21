@@ -70,5 +70,5 @@ docker run -d \
 --health-start-period=40s \
 -p 5000:5000 \
 -v hercules_log:/app/Hercules/Logs \
-serpensin/hercules
+ghcr.io/serpensin/discordbots-hercules:latest
 ```
