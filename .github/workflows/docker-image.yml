@@ -13,6 +13,9 @@ permissions:
 jobs:
   build-and-push-x86:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/386, linux/amd64]
 
     steps:
     - name: Checkout Code
@@ -28,32 +31,24 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and Push Docker Image for linux/386
+    - name: Build and Push Docker Image
       run: |
         REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
         REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
         IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
+        PLATFORM_TAG=$(echo "${{ matrix.platform }}" | tr '/' '-')
         docker buildx build \
           --compress \
-          --platform linux/386 \
-          --tag $IMAGE_NAME:latest-linux-386 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/amd64
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/amd64 \
-          --tag $IMAGE_NAME:latest-linux-amd64 \
+          --platform ${{ matrix.platform }} \
+          --tag $IMAGE_NAME:latest-${PLATFORM_TAG} \
           --push ./Hercules
       shell: bash
 
   build-and-push-arm:
     runs-on: ubuntu-24.04-arm
+    strategy:
+      matrix:
+        platform: [linux/arm/v6, linux/arm/v7, linux/arm64/v8]
 
     steps:
     - name: Checkout Code
@@ -69,39 +64,16 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and Push Docker Image for linux/arm/v6
+    - name: Build and Push Docker Image
       run: |
         REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
         REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
         IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
+        PLATFORM_TAG=$(echo "${{ matrix.platform }}" | tr '/' '-')
         docker buildx build \
           --compress \
-          --platform linux/arm/v6 \
-          --tag $IMAGE_NAME:latest-linux-arm-v6 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/arm/v7
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/arm/v7 \
-          --tag $IMAGE_NAME:latest-linux-arm-v7 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/arm64/v8
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/arm64/v8 \
-          --tag $IMAGE_NAME:latest-linux-arm64-v8 \
+          --platform ${{ matrix.platform }} \
+          --tag $IMAGE_NAME:latest-${PLATFORM_TAG} \
           --push ./Hercules
       shell: bash
 
