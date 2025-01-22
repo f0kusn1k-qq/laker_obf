@@ -13,6 +13,9 @@ permissions:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64/v8]
 
     steps:
     - name: Checkout Code
@@ -28,91 +31,18 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and Push Docker Image for linux/386
+    - name: Build and Push Docker Image
       run: |
         REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
         REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
         IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
+        PLATFORM_TAG=$(echo "${{ matrix.platform }}" | tr '/' '-')
         docker buildx build \
           --compress \
-          --platform linux/386 \
-          --tag $IMAGE_NAME:latest-linux-386 \
+          --platform ${{ matrix.platform }} \
+          --tag $IMAGE_NAME:latest-${PLATFORM_TAG} \
           --push ./Hercules
       shell: bash
-
-    - name: Build and Push Docker Image for linux/amd64
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/amd64 \
-          --tag $IMAGE_NAME:latest-linux-amd64 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/arm/v6
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/arm/v6 \
-          --tag $IMAGE_NAME:latest-linux-arm-v6 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/arm/v7
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/arm/v7 \
-          --tag $IMAGE_NAME:latest-linux-arm-v7 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/arm64/v8
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/arm64/v8 \
-          --tag $IMAGE_NAME:latest-linux-arm64-v8 \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/ppc64le
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/ppc64le \
-          --tag $IMAGE_NAME:latest-linux-ppc64le \
-          --push ./Hercules
-      shell: bash
-
-    - name: Build and Push Docker Image for linux/s390x
-      run: |
-        REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-        REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
-        IMAGE_NAME="ghcr.io/$REPO_OWNER/$REPO_NAME"
-        docker buildx build \
-          --compress \
-          --platform linux/s390x \
-          --tag $IMAGE_NAME:latest-linux-s390x \
-          --push ./Hercules
-      shell: bash
-
-
 
   create-multiarch-latest:
     runs-on: ubuntu-latest
@@ -137,6 +67,4 @@ jobs:
           $IMAGE_NAME:latest-linux-arm-v6 \
           $IMAGE_NAME:latest-linux-arm-v7 \
           $IMAGE_NAME:latest-linux-arm64-v8 \
-          $IMAGE_NAME:latest-linux-ppc64le \
-          $IMAGE_NAME:latest-linux-s390x
       shell: bash
