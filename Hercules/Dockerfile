@@ -14,7 +14,8 @@ ARG TARGETPLATFORM
 ARG BUILD_DATE
 ARG COMMIT
 
-RUN apk add --virtual .build-deps gcc musl-dev python3-dev libc-dev linux-headers rust cargo g++ && \
+RUN apk update && \
+    apk add --virtual .build-deps gcc musl-dev python3-dev libc-dev linux-headers rust cargo g++ && \
     apk add git lua5.4-dev luarocks5.4 && \
     ln -s /usr/bin/luarocks-5.4 /usr/bin/luarocks && \
     luarocks install luacheck && \
