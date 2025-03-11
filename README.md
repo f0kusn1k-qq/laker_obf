@@ -34,7 +34,7 @@ Hercules is very much still in development and may not be the best yet, but we a
     - **Linux:**
         - Install lua with:
           ```bash
-          sudo apt install liblua5.4-dev
+          sudo apt install lua5.4 liblua5.4-dev
           ```
         - Install luarocks with:
           ```bash
@@ -54,7 +54,7 @@ Hercules is very much still in development and may not be the best yet, but we a
 
 ### Docker Method
 
-#### Docker Compose Method
+#### Docker Compose Method (Recommended)
 
 1. Open the `docker-compose.yml` file and update the environment variables as needed (such as `TOKEN`, `OWNER_ID`, and `SUPPORT_SERVER`).
 2. In the terminal, run the following command from the `Hercules` folder to start the bot: `docker-compose up -d`.
