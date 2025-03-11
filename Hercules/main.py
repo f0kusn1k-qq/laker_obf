@@ -890,8 +890,20 @@ async def self(interaction: discord.Interaction,
 #Fetch file from upload
 @tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
 # @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
-@discord.app_commands.describe(file = 'File to be obfuscated.')
-async def self(interaction: discord.Interaction, file: discord.Attachment):
+@discord.app_commands.describe(file = 'File to be obfuscated.',
+                               optional_preset = 'Optional presets that can be used.'
+                               )
+@discord.app_commands.choices(
+    optional_preset = [
+        discord.app_commands.Choice(name='Minimal parameters for lighter obfuscation.', value='min'),
+        discord.app_commands.Choice(name='Moderate parameters for balanced obfuscation.', value='mid'),
+        discord.app_commands.Choice(name='Maximum parameters for heavier obfuscation.', value='max')
+        ]
+    )
+async def self(interaction: discord.Interaction,
+               file: discord.Attachment,
+               optional_preset: str = None
+               ):
     await interaction.response.defer(ephemeral=True)
     if not file.filename.endswith('.lua'):
         await interaction.edit_original_response(content="Please upload a `.lua` file.")
@@ -918,7 +930,7 @@ async def self(interaction: discord.Interaction, file: discord.Attachment):
 
         selected_bits = view.selected_bits
 
-        success, conout = Hercules.obfuscate(file_path, selected_bits)
+        success, conout = Hercules.obfuscate(file_path, selected_bits, optional_preset)
         if not success:
             view = AskSendDebug()
 
