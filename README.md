@@ -23,29 +23,34 @@ Hercules is very much still in development and may not be the best yet, but we a
 ### Classic Method
 
 1. Ensure Python >=3.12 is installed. Download it [here](https://www.python.org/downloads/).
-2. Clone this repository or download the zip file.
-3. Open a terminal in the "Hercules" folder where you cloned the repository or extracted the zip file.
-4. Run `git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator
-5. Install luacheck
+2. Run `git clone https://github.com/Serpensin/DiscordBots-Hercules.git HerculesBot && cd HerculesBot/Hercules`.
+3. Run `git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator`
+4. Install luacheck
     - **Windows:**
-        - Download luacheck from [this link](https://github.com/mpeterv/luacheck/releases/download/0.23.0/luacheck.exe).
-        - Place the downloaded file in the same directory where `main.py` is located.
+        - Install luacheck with:
+          ```cmd
+          curl -L -o luacheck.exe "https://github.com/mpeterv/luacheck/releases/download/0.23.0/luacheck.exe"
+          ```
     - **Linux:**
+        - Install lua with:
+          ```bash
+          sudo apt install liblua5.4-dev
+          ```
+        - Install luarocks with:
+          ```bash
+          sudo apt install luarocks
+          ```
         - Install luacheck with:
           ```bash
-          luarocks install luacheck
+          sudo luarocks-5.4 install luacheck
           ```
-        - Create a symbolic link by running:
-          ```bash
-          sudo ln -s /usr/bin/luarocks-5.4 /usr/bin/luarocks
-          ```
-6. Run `pip install -r requirements.txt` to install the required Python packages.
-7. Open the file ".env.template" and complete all variables:
+5. Run `pip install -r requirements.txt` to install the required Python packages.
+6. Open the file ".env.template" and complete all variables:
    - `TOKEN`: The token of your bot. Obtain it from the [Discord Developer Portal](https://discord.com/developers/applications).
    - `OWNER_ID`: Your Discord ID.
    - `SUPPORT_SERVER`: The ID of your support server. The bot must be a member of this server to create an invite if someone requires support.
-8. Rename the file ".env.template" to ".env".
-9. Run `python main.py` or `python3 main.py` to start the bot.
+7. Rename the file ".env.template" to ".env".
+8. Run `python main.py` or `python3 main.py` to start the bot.
 
 ### Docker Method
 
