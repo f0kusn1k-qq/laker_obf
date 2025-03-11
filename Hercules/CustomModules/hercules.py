@@ -23,10 +23,10 @@ class Hercules:
         self._program_logger = program_logger
         self._lua = self._getLuaInterpreter()
         if not self._lua:
-            self._log_and_exit("Could not find LUA 5.4", "Shutting down due to missing LUA 5.4")
+            self._log_and_exit("Shutting down due to missing LUA 5.4")
         self._obfuscator_folder, self.obfuscator_file = self._detectObfuscator()
         if not self._obfuscator_folder:
-            self._log_and_exit("Could not find Obfuscator", "Shutting down due to missing Obfuscator")
+            self._log_and_exit("Shutting down due to missing Obfuscator")
         self.methods = [
             {'key': 'control_flow', 'name': 'Control Flow', 'bitkey': 0, 'enabled': True},
             {'key': 'variable_renaming', 'name': 'Variable Renaming', 'bitkey': 1, 'enabled': True},
@@ -42,16 +42,14 @@ class Hercules:
             {'key': 'dynamic_code', 'name': 'Dynamic Code', 'bitkey': 11, 'enabled': False},
         ]
 
-    def _log_and_exit(self, error_msg, info_msg):
+    def _log_and_exit(self, msg):
         """
-        Logs an error message and exits the program.
+            Logs an error message and exits the program.
 
-        Args:
-            error_msg: Error message to log.
-            info_msg: Informational message to log before exiting.
+            Args:
+                msg: Error message to be logged.
         """
-        self._program_logger.error(error_msg)
-        self._program_logger.info(info_msg)
+        self._program_logger.error(msg)
         sys.exit(1)
 
     def isValidLUASyntax(self, lua_code: str, isFile: bool = False) -> tuple[bool, str]:

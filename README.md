@@ -26,8 +26,20 @@ Hercules is very much still in development and may not be the best yet, but we a
 2. Clone this repository or download the zip file.
 3. Open a terminal in the "Hercules" folder where you cloned the repository or extracted the zip file.
 4. Run `git clone "https://github.com/zeusssz/hercules-obfuscator.git" Obfuscator
-5. Install luacheck with `luarocks install luacheck` if your on linux, or download it from [here](https://github.com/mpeterv/luacheck/releases/download/0.23.0/luacheck.exe) and put it at the location, where `main.py` is, if your on windows.
-6. Run `pip install -r requirements.txt` to install the dependencies.
+5. Install luacheck
+    - **Windows:**
+        - Download luacheck from [this link](https://github.com/mpeterv/luacheck/releases/download/0.23.0/luacheck.exe).
+        - Place the downloaded file in the same directory where `main.py` is located.
+    - **Linux:**
+        - Install luacheck with:
+          ```bash
+          luarocks install luacheck
+          ```
+        - Create a symbolic link by running:
+          ```bash
+          sudo ln -s /usr/bin/luarocks-5.4 /usr/bin/luarocks
+          ```
+6. Run `pip install -r requirements.txt` to install the required Python packages.
 7. Open the file ".env.template" and complete all variables:
    - `TOKEN`: The token of your bot. Obtain it from the [Discord Developer Portal](https://discord.com/developers/applications).
    - `OWNER_ID`: Your Discord ID.
