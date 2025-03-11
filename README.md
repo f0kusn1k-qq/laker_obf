@@ -5,14 +5,18 @@ Hercules is very much still in development and may not be the best yet, but we a
 
 ## Features
 
-- **String Encoding:** Obfuscates strings by encoding them using a Caeser Cipher.
-- **Variable Renaming:** Replaces variable names with randomly generated names.
-- **Control Flow Obfuscation:** Adds fake control flow structures to confuse static analysis.
-- **Garbage Code Insertion:** Injects junk code to bloat and obscure the script.
-- **Bytecode Encoding:** Converts parts of a script into bytecode, making them harder to follow.
-- **Function Inlining:** Integrates function code directly into calls, obscuring the original structure and logic. -> ***Broken atm***
-- **Opaque Predicates:** Uses complex conditions that always evaluate to true or false, obscuring actual purpose.
-- **Dynamic Code Generator:** Generates code blocks from the script itself, to complicate static analysis. -> ***Broken atm***
+- **Control Flow:** Adds fake control flow structures to confuse static analysis. *(Enabled)*
+- **Variable Renaming:** Replaces variable names with randomly generated names. *(Enabled)*
+- **Garbage Code:** Injects junk code to bloat and obscure the script. *(Enabled)*
+- **Opaque Predicates:** Uses complex conditions that always evaluate to true or false, obscuring the actual purpose. *(Enabled)*
+- **Bytecode Encoding:** Converts parts of a script into bytecode, making them harder to follow. *(Disabled)*
+- **String Encoding:** Obfuscates strings by encoding them using a Caesar Cipher. *(Disabled)*
+- **Code Compressor:** Compresses code to reduce its size and further obfuscate its structure. *(Enabled)*
+- **String to Expression:** Converts strings to expressions to complicate static analysis. *(Disabled)*
+- **Virtual Machine:** Executes parts of the code in a virtualized environment for additional obfuscation. *(Enabled)*
+- **Function Wrapping:** Wraps functions in additional layers to obscure functionality. *(Enabled)*
+- **Function Inlining:** Integrates function code directly into calls, obscuring the original structure and logic. *(Disabled)*
+- **Dynamic Code:** Generates code blocks from the script itself to complicate static analysis. *(Disabled)*
 
 ## Setup
 
