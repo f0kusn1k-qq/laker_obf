@@ -28,18 +28,90 @@ class Hercules:
         if not self._obfuscator_folder:
             self._log_and_exit("Shutting down due to missing Obfuscator")
         self.methods = [
-            {'key': 'control_flow', 'name': 'Control Flow', 'bitkey': 0, 'enabled': True},
-            {'key': 'variable_renaming', 'name': 'Variable Renaming', 'bitkey': 1, 'enabled': True},
-            {'key': 'garbage_code', 'name': 'Garbage Code', 'bitkey': 2, 'enabled': True},
-            {'key': 'opaque_preds', 'name': 'Opaque Predicates', 'bitkey': 3, 'enabled': True},
-            {'key': 'bytecode_encoder', 'name': 'Bytecode Encoding', 'bitkey': 4, 'enabled': False},
-            {'key': 'string_encoding', 'name': 'String Encoding', 'bitkey': 5, 'enabled': False},
-            {'key': 'compressor', 'name': 'Code Compressor', 'bitkey': 6, 'enabled': True},
-            {'key': 'string_to_expr', 'name': 'String to Expression', 'bitkey': 7, 'enabled': False},
-            {'key': 'virtual_machine', 'name': 'Virtual Machine', 'bitkey': 8, 'enabled': True},
-            {'key': 'wrap_in_func', 'name': 'Function Wrapping', 'bitkey': 9, 'enabled': True},
-            {'key': 'func_inlining', 'name': 'Function Inlining', 'bitkey': 10, 'enabled': False},
-            {'key': 'dynamic_code', 'name': 'Dynamic Code', 'bitkey': 11, 'enabled': False},
+            {
+                'key': 'control_flow',
+                'name': 'Control Flow',
+                'bitkey': 0,
+                'enabled': True,
+                'explanation': "Applies control flow obfuscation techniques to alter the execution path, making static analysis more challenging."
+            },
+            {
+                'key': 'variable_renaming',
+                'name': 'Variable Renaming',
+                'bitkey': 1,
+                'enabled': True,
+                'explanation': "Renames variables to obscure their original names and purposes, hindering reverse engineering."
+            },
+            {
+                'key': 'garbage_code',
+                'name': 'Garbage Code',
+                'bitkey': 2,
+                'enabled': True,
+                'explanation': "Inserts non-functional code that does nothing but confuse decompilers and analysts."
+            },
+            {
+                'key': 'opaque_preds',
+                'name': 'Opaque Predicates',
+                'bitkey': 3,
+                'enabled': True,
+                'explanation': "Uses opaque predicates that always evaluate to true or false, obscuring the logical flow."
+            },
+            {
+                'key': 'bytecode_encoder',
+                'name': 'Bytecode Encoding',
+                'bitkey': 4,
+                'enabled': False,
+                'explanation': "Encodes the program's bytecode to prevent easy interpretation of the original code."
+            },
+            {
+                'key': 'string_encoding',
+                'name': 'String Encoding',
+                'bitkey': 5,
+                'enabled': False,
+                'explanation': "Encodes string literals to hide sensitive data and make it harder to understand the code."
+            },
+            {
+                'key': 'compressor',
+                'name': 'Code Compressor',
+                'bitkey': 6,
+                'enabled': True,
+                'explanation': "Compresses the code, reducing readability and making analysis more difficult."
+            },
+            {
+                'key': 'string_to_expr',
+                'name': 'String to Expression',
+                'bitkey': 7,
+                'enabled': False,
+                'explanation': "Converts strings into expressions, delaying their evaluation or obscuring their real content."
+            },
+            {
+                'key': 'virtual_machine',
+                'name': 'Virtual Machine',
+                'bitkey': 8,
+                'enabled': True,
+                'explanation': "Implements a custom virtual machine to execute code, adding a layer of complexity to static analysis."
+            },
+            {
+                'key': 'wrap_in_func',
+                'name': 'Function Wrapping',
+                'bitkey': 9,
+                'enabled': True,
+                'explanation': "Wraps code blocks into functions to disrupt natural flow and complicate the program's structure."
+            },
+            {
+                'key': 'func_inlining',
+                'name': 'Function Inlining',
+                'bitkey': 10,
+                'enabled': False,
+                'explanation': "Inlines functions, merging them with the calling code to make the structure less obvious."
+            },
+            {
+                'key': 'dynamic_code',
+                'name': 'Dynamic Code',
+                'bitkey': 11,
+                'enabled': False,
+                'explanation': "Generates or modifies code at runtime, making static analysis and prediction of behavior more challenging."
+            },
         ]
 
     def _log_and_exit(self, msg):

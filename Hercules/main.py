@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.3.3"
+BOT_VERSION = "1.3.4"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -664,7 +664,7 @@ async def self(interaction: discord.Interaction):
     embed.add_field(name="Sentry-Version", value=f"{sentry_sdk.consts.VERSION}", inline=True)
 
     embed.add_field(name="Repo", value=f"[GitHub](https://github.com/Serpensin/DiscordBots-Hercules)", inline=True)
-    embed.add_field(name="Invite", value=f"[Invite me](https://discord.com/api/oauth2/authorize?client_id={bot.user.id}&permissions=117824&scope=bot)", inline=True)
+    embed.add_field(name="\u200b", value="\u200b", inline=True)
     embed.add_field(name="\u200b", value="\u200b", inline=True)
 
     if interaction.user.id == int(OWNERID):
@@ -685,31 +685,23 @@ async def self(interaction: discord.Interaction):
 @tree.command(name = 'help', description = 'Explains how to use this obfuscator.')
 @discord.app_commands.checks.cooldown(1, 30, key=lambda i: (i.user.id))
 async def self(interaction: discord.Interaction):
+    commands_help = (
+        "**/obfuscate_url [url]**:\nSubmit a URL (e.g. from pastebin) containing a Lua file. Hercules will process and obfuscate it.\n\n"
+        "**/obfuscate_file [file]**:\nUpload a `.lua` file along with this command. Hercules will add it to the queue and notify you once it's done.\n\n"
+        "**/check_url [url]**:\nCheck if a URL (e.g. from pastebin) contains valid Lua syntax.\n\n"
+        "**/check_file [file]**:\nUpload a `.lua` file along with this command to check if it contains valid Lua syntax.\n\n\n"
+    )
+
+    methods_explanations = "**Obfuscation Methods:**\n\n"
+    for method in Hercules.methods:
+        methods_explanations += f"**{method['name']}**:\n{method['explanation']}\n\n"
+
     embed = discord.Embed(
-    title="Hercules Bot - Help",
-    description="Your trusty bot for obfuscating Lua files 💪",
-    color=discord.Color.blue()
-    )    
-    embed.add_field(
-        name="/obfuscate_url [url]",
-        value="Submit a URL (e.g. from pastebin) containing a Lua file. Hercules will process and obfuscate it.",
-        inline=False
-    )   
-    embed.add_field(
-        name="/obfuscate_file [file]",
-        value="Upload a `.lua` file along with this command. Hercules will add it to the queue and notify you once it's done.",
-        inline=False
+        title="Hercules Bot - Help",
+        description=commands_help + methods_explanations,
+        color=discord.Color.blue()
     )
-    embed.add_field(
-        name="/check_url [url]",
-        value="Check if a URL (e.g. from pastebin) contains valid Lua syntax.",
-        inline=False
-    )
-    embed.add_field(
-        name="/check_file [file]",
-        value="Upload a `.lua` file along with this command to check if it contains valid Lua syntax.",
-        inline=False
-    )
+
     embed.set_footer(text="Happy obfuscating! 🛡️")
     await interaction.response.send_message(embed=embed)
 
@@ -835,7 +827,7 @@ class AskSendDebug(discord.ui.View):
 
 #Fetch file from URL
 @tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
-# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(url = 'The URL of the Lua file.',
                                optional_preset = 'Optional presets that can be used.'
                                )
@@ -889,7 +881,7 @@ async def self(interaction: discord.Interaction,
 
 #Fetch file from upload
 @tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
-# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(file = 'File to be obfuscated.',
                                optional_preset = 'Optional presets that can be used.'
                                )
