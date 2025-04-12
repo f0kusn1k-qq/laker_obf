@@ -142,12 +142,18 @@ class Hercules:
         else:
             temp_file_path = lua_code
 
-        result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True)
-        if result.returncode in [0, 1]:
-            return True, result.stdout
-        else:
-            if not isFile:
-                os.remove(temp_file_path)
+        try:  
+            result = subprocess.run(['luacheck', temp_file_path], capture_output=True, text=True, timeout=8)  
+        except subprocess.TimeoutExpired:  
+            if not isFile:  
+                os.remove(temp_file_path)  
+            return False, "Validation aborted: Process exceeded 8 seconds timeout."  
+
+        if result.returncode in [0, 1]:  
+            return True, result.stdout  
+        else:  
+            if not isFile:  
+                os.remove(temp_file_path)  
             return False, result.stdout
 
     def obfuscate(self, file_path: str, bitkey: int, optional_preset: Optional[Literal["min", "mid", "max"]]) -> tuple[bool, str]:

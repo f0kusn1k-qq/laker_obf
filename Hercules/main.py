@@ -36,7 +36,7 @@ os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.3.6"
+BOT_VERSION = "1.3.7"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -357,6 +357,12 @@ class Functions():
 
         try:
             async with aiohttp.ClientSession() as session:
+                async with session.head(url) as response:
+                    if response.status not in [200, 204, 301, 302]:
+                        return False, f"HTTP Error: {response.status}"
+                    if int(response.headers.get('Content-Length', 0)) > 5 * 1024 * 1024:
+                        return False, "File is too big. (Max: 5MB)"
+
                 async with session.get(url) as response:
                     if response.status not in [200, 204, 301, 302]:
                         return False, f"HTTP Error: {response.status}"
@@ -830,7 +836,7 @@ class AskSendDebug(discord.ui.View):
 
 #Fetch file from URL
 @tree.command(name = 'obfuscate_url', description = 'Submit a URL containing a Lua file.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(url = 'The URL of the Lua file.',
                                optional_preset = 'Optional presets that can be used.'
                                )
@@ -884,7 +890,7 @@ async def self(interaction: discord.Interaction,
 
 #Fetch file from upload
 @tree.command(name = 'obfuscate_file', description = 'Upload a Lua file.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+# @discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(file = 'File to be obfuscated.',
                                optional_preset = 'Optional presets that can be used.'
                                )
@@ -949,7 +955,7 @@ async def self(interaction: discord.Interaction,
 
 #Errorcheck from url
 @tree.command(name = 'check_url', description = 'Check if the URL is reachable and contains valid Lua syntax.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.checks.cooldown(2, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(url = 'The URL to check.')
 async def self(interaction: discord.Interaction, url: str):
     await interaction.response.defer(ephemeral=True)
@@ -966,7 +972,7 @@ async def self(interaction: discord.Interaction, url: str):
 
 #Error check from file
 @tree.command(name = 'check_file', description = 'Check if the uploaded file contains valid Lua syntax.')
-@discord.app_commands.checks.cooldown(1, 60, key=lambda i: (i.user.id))
+@discord.app_commands.checks.cooldown(2, 60, key=lambda i: (i.user.id))
 @discord.app_commands.describe(file = 'The file to check.')
 async def self(interaction: discord.Interaction, file: discord.Attachment):
     await interaction.response.defer(ephemeral=True)
