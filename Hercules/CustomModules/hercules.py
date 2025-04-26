@@ -178,7 +178,7 @@ class Hercules:
         self._program_logger.info(f"Obfuscating file: {file_path} with flags: {flags}")
 
         try:
-            result = subprocess.run([self._lua, "hercules.lua", file_path] + flags + ["--overwrite"],
+            result = subprocess.run([self._lua, "obfuscated.lua", file_path] + flags + ["--overwrite"],
                                     check=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT)
@@ -253,5 +253,5 @@ class Hercules:
             A tuple containing the obfuscator folder and file path if found, otherwise (None, None).
         """
         folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Obfuscator', 'src')).replace('\\', '/')
-        file = os.path.join(folder, 'hercules.lua').replace('\\', '/')
+        file = os.path.join(folder, 'obfuscated.lua').replace('\\', '/')
         return (folder, file) if os.path.exists(file) else (None, None)
