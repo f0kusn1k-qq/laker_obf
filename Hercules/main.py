@@ -29,14 +29,14 @@ from zipfile import ZIP_DEFLATED, ZipFile
 #Init
 discord.VoiceClient.warn_nacl = False
 load_dotenv()
-APP_FOLDER_NAME = 'Hercules-Bot'
-BOT_NAME = 'Hercules'
+APP_FOLDER_NAME = 'laker-obf'
+BOT_NAME = 'obfuscator'
 os.makedirs(f'{APP_FOLDER_NAME}//Logs', exist_ok=True)
 os.makedirs(f'{APP_FOLDER_NAME}//Buffer', exist_ok=True)
 LOG_FOLDER = f'{APP_FOLDER_NAME}//Logs//'
 BUFFER_FOLDER = f'{APP_FOLDER_NAME}//Buffer//'
 ACTIVITY_FILE = f'{APP_FOLDER_NAME}//activity.json'
-BOT_VERSION = "1.3.7"
+BOT_VERSION = "1.4.8.7"
 sentry_sdk.init(
     dsn=os.getenv('SENTRY_DSN'),
     traces_sample_rate=1.0,
@@ -81,7 +81,7 @@ class JSONValidator:
 
     default_content = {
         "activity_type": "Playing",
-        "activity_title": "Made by Serpensin: https://gitlab.bloodygang.com/Serpensin",
+        "activity_title": "obfuscating your files",
         "activity_url": "",
         "status": "online"
     }
@@ -262,11 +262,14 @@ class aclient(discord.AutoShardedClient):
         if self.initialized:
             return
         program_logger.info(r'''
-                           _
-  /\  /\___ _ __ ___ _   _| | ___  ___ 
- / /_/ / _ \ '__/ __| | | | |/ _ \/ __|
-/ __  /  __/ | | (__| |_| | |  __/\__ \
-\/ /_/ \___|_|  \___|\__,_|_|\___||___/
+            
+         __    ____                      __                __                 __      __      ____      _ __  
+  ____  / /_  / __/_  ________________ _/ /_____  _____   / /_  __  __   ____/ /___  / /___  / __/___  (_) /__
+ / __ \/ __ \/ /_/ / / / ___/ ___/ __ `/ __/ __ \/ ___/  / __ \/ / / /  / __  / __ \/ / __ \/ /_/ __ \/ / //_/
+/ /_/ / /_/ / __/ /_/ (__  ) /__/ /_/ / /_/ /_/ / /     / /_/ / /_/ /  / /_/ / /_/ / / /_/ / __/ / / / / ,<   
+\____/_.___/_/  \__,_/____/\___/\__,_/\__/\____/_/     /_.___/\__, /   \__,_/\____/_/\____/_/ /_/ /_/_/_/|_|  
+                                                             /____/                                           
+
         ''')
         bot.loop.create_task(Tasks.health_server())
         global start_time
